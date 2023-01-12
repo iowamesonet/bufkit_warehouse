@@ -27,6 +27,3 @@ $grey = imagecolorallocate($im, 191, 200, 197);
 imagestring($im, 10, 50, 25, $initialize, $red);
 header("Content-type: image/png");
 imagepng($im);
-
-
-?>

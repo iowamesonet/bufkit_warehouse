@@ -8,7 +8,7 @@ require_once "../config/settings.php";
 <html>
 <head>
 <title>The Bufkit Warehouse</title>
-<link rel="stylesheet" href="http://www.meteor.iastate.edu/~ckarsten/bufkit/css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
 <link rel="stylesheet" type="text/css" href="settings.css">
 <meta name="keywords" content="bufkit, bufkit warehouse, bufkit data, 
 bufkit documentation, bufkit files, bufkit download, bufkit links, install 
@@ -23,7 +23,7 @@ $a_year = date("Y",$at);
 $a_month = date("m",$at);
 $a_day = date("d",$at);
 
-$archive = "http://mtarchive.geol.iastate.edu/".$a_year."/".$a_month."/".$a_day."/bufkit/";
+$archive = "https://mtarchive.geol.iastate.edu/".$a_year."/".$a_month."/".$a_day."/bufkit/";
 
 ?>
 
@@ -139,7 +139,7 @@ BufGet?</a>
 <p>
 <h2>
 <ul>
-<a href="http://www.meteor.iastate.edu/~ckarsten/bufkit/data">Data Sources</a>
+<a href="data">Data Sources</a>
 </h2>
 </ul>
 </p>
@@ -147,7 +147,7 @@ BufGet?</a>
 <p>
 <h2>
 <ul>
-<a href="http://www.meteor.iastate.edu/~ckarsten/bufkit/documentation.html">Documentation</a>     
+<a href="documentation.html">Documentation</a>     
 </h2>
 </ul>
 </p>
@@ -155,7 +155,7 @@ BufGet?</a>
 <p>
 <h2>
 <ul>
-<a href="http://www.meteor.iastate.edu/~ckarsten/bufkit/publications.html">Publications</a>     
+<a href="publications.html">Publications</a>     
 </h2>
 </ul>
 </p>
@@ -163,7 +163,7 @@ BufGet?</a>
 <p> 
 <h2>
 <ul>       
-<a href="http://www.meteor.iastate.edu/~ckarsten/bufkit/downloads.html">Downloads</a>
+<a href="downloads.html">Downloads</a>
 </h2>
 </ul>
 </p>
@@ -171,7 +171,7 @@ BufGet?</a>
 <p> 
 <h2>
 <ul>       
-<a href="http://www.meteor.iastate.edu/~ckarsten/bufkit/files.html">Helpful Files</a>
+<a href="files.html">Helpful Files</a>
 </h2>
 </ul>
 </p>
@@ -179,7 +179,7 @@ BufGet?</a>
 <p>
 <h2>
 <ul>
-<a href="http://www.meteor.iastate.edu/~ckarsten/bufkit/links.html">Additional Links</a>  
+<a href="links.html">Additional Links</a>  
 </h2>
 </ul>
 </p>
@@ -187,7 +187,7 @@ BufGet?</a>
 <p>
 <h2>
 <ul>     
-<a href="http://www.meteor.iastate.edu/~ckarsten/bufkit/acknowledgements.html">Acknowledgements</a>
+<a href="acknowledgements.html">Acknowledgements</a>
 </h2>
 </ul>
 </p>
@@ -206,9 +206,9 @@ BufGet?</a>
                                                 <a href='http://facebook.com/profile.php?id=<?php echo $group_id;  ?>&ap=1'><?php echo $des->name; ?></a> - FACEBOOK WALL
                                         </div>
                                         <div style="width:100%; margin: 5px">
-					</div>
-					<iframe src="http://www.facebook.com/plugins/like.php?href=http%3A%2F%2Fwww.facebook.com%2Fpages%2FThe-Bufkit-Warehouse%2F106061659471133%3Fv%3Dwall&amp;layout=standard&amp;show_faces=false&amp;width=450&amp;action=like&amp;colorscheme=dark&amp;height=23"scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:350px; height:28px;" allowTransparency="true"></iframe>
-					<div class="fb_group">
+                    </div>
+                    <iframe src="http://www.facebook.com/plugins/like.php?href=http%3A%2F%2Fwww.facebook.com%2Fpages%2FThe-Bufkit-Warehouse%2F106061659471133%3Fv%3Dwall&amp;layout=standard&amp;show_faces=false&amp;width=450&amp;action=like&amp;colorscheme=dark&amp;height=23"scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:350px; height:28px;" allowTransparency="true"></iframe>
+                    <div class="fb_group">
                                         </div>
 
                                         <?php
@@ -217,7 +217,7 @@ BufGet?</a>
                                         foreach($data->data as $d) {
                                         if($counter==$limit)
                                         break;
-					if($d->from->id == 106061659471133){
+                    if($d->from->id == 106061659471133){
                                         ?>
 
                                         <div align="left">
@@ -236,7 +236,7 @@ BufGet?</a>
                                         </div>      
                                         <?php
                                         $counter++;
-					}
+                    }
                                         }
                                         ?>
                                 </div>                  

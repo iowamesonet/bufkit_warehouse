@@ -51,4 +51,3 @@ $bar1->SetFillColor('forestgreen');
 
 $graph->Add($bar1);
 $graph->Stroke();
-?>
