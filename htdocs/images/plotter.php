@@ -20,7 +20,7 @@ date_default_timezone_set('UTC');
 
 if (isset($argv)) {
     for ($i = 1; $i < count($argv); $i++) {
-        $it = split("=", $argv[$i]);
+        $it = explode("=", $argv[$i]);
         $_GET[$it[0]] = $it[1];
     }
 }
@@ -67,6 +67,8 @@ $end_time = isset($_GET["end_time"]) ? xssafe($_GET["end_time"]) : "";
 
 $nam4km_cobb_time = array();
 
+$start = "";
+$end = "";
 if (!empty($start_time) and !empty($end_time)) {
     $s = str_split($start_time);
     $start = strtotime($s[0] . $s[1] . $s[2] . $s[3] . "-" . $s[4] . $s[5] . "-" . $s[6] . $s[7] . " " . $s[8] . $s[9] . ":" . $s[10] . $s[11] . ":" . $s[12] . $s[13]);
@@ -223,6 +225,7 @@ for ($z = 0; $z <= 5; $z++) {
         $buf_t_gfs = array();
         $gfs_uwnd = array();
         $gfs_vwnd = array();
+        $parse_date = "";
         if ($date != "") {
             if ($hr >= 0 && $hr <= 11) {
                 $parse_date = "" . $year . "" . $mon . "" . $day . "00";
@@ -230,7 +233,7 @@ for ($z = 0; $z <= 5; $z++) {
                 $parse_date = "" . $year . "" . $mon . "" . $day . "12";
             }
         }
-        @$parse_date_gfs = $parse_date;
+        $parse_date_gfs = $parse_date;
     } elseif ($z == 3) {
         $mdl = "gfsm";
         $dt = 3;
@@ -604,10 +607,6 @@ for ($z = 0; $z <= 5; $z++) {
     }
 }
 
-//print_r($buf_t_gfs);
-//print_r($gfs_var);
-//die();
-
 if (!empty($start_time) && !empty($end_time)) {
     $min = $start;
     $max = $end;
@@ -617,13 +616,13 @@ if (!empty($start_time) && !empty($end_time)) {
     $start = $min;
     $end = $max;
 } else {
-    $link = ROOTURL . "data/parser2.php?model=gfs&site=kdsm&date=" . $parse_date_gfs . "";
+    $link = ROOTURL . "data/parser.php?model=gfs&site=kdsm&date=" . $parse_date_gfs . "";
     $data = file($link);
     foreach ($data as $line) {
         $d = explode("\t", trim($line));
         $buf_t_gfs[] = strtotime($d[1]);
     }
-    $link = ROOTURL . "data/parser2.php?model=gfsm&site=kdsm&date=" . $parse_date_gfsm . "";
+    $link = ROOTURL . "data/parser.php?model=gfsm&site=kdsm&date=" . $parse_date_gfsm . "";
     $data = file($link);
     foreach ($data as $line) {
         $d = explode("\t", trim($line));
@@ -633,6 +632,7 @@ if (!empty($start_time) && !empty($end_time)) {
     $max = max($buf_t_gfs[count($buf_t_gfs) - 1], $buf_t_gfsm[count($buf_t_gfsm) - 1]);
     $start = $min;
     $end = $max;
+    
 }
 
 
@@ -770,31 +770,8 @@ if ($var1 == "snow_accum" && $date == "") {
                 }
             }
         }
-        //print_r($gfs_var2);
-        //print_r($gfs_cobb_time);
-        //die();
     }
 }
-
-
-/*
-if($nam == 1){
-    $mins[] = $buf_t_nam[0];
-    $maxs[] = $buf_t_nam[84];
-}
-if($namm == 1){
-        $mins[] = $buf_t_namm[0];
-        $maxs[] = $buf_t_namm[84];
-}
-if($gfs == 1){
-        $mins[] = $buf_t_gfs[0];
-        $maxs[] = $buf_t_gfs[60];
-}
-if($gfsm == 1){
-        $mins[] = $buf_t_gfsm[0];
-        $maxs[] = $buf_t_gfsm[60];
-}
-*/
 
 
 $init_year = date('Y', $min);

@@ -1,425 +1,143 @@
 <?php
+/*
+ * Task is to convert IEM web service providing atomic bufkit data
+ */
 require_once "../../config/settings.php";
-
-putenv("TZ=UTC");
-
-if (isset($argv))
-    for ($i = 1; $i < count($argv); $i++) {
-        $it = split("=", $argv[$i]);
-        $_GET[$it[0]] = $it[1];
-    }
-
-date_default_timezone_set('UTC');
-
 header('Content-type: text/plain');
 
-$model = isset($_GET["model"]) ? $_GET["model"] : "nam";
+$model = isset($_GET["model"]) ? strtoupper($_GET["model"]) : "NAM";
 $member = isset($_GET["member"]) ? $_GET["member"] : "1";
-$site = isset($_GET["site"]) ? $_GET["site"] : "kdsm";
+$site = isset($_GET["site"]) ? strtoupper($_GET["site"]) : "KDSM";
 $ratio = isset($_GET["ratio"]) ? $_GET["ratio"] : "11";
 $hgt = isset($_GET["hgt"]) ? $_GET["hgt"] : "80";
 $psfc = isset($_GET["psfc"]) ? $_GET["psfc"] : "500";
 $z0 = isset($_GET["z0"]) ? $_GET["z0"] : "11";
-$unleash = isset($_GET["unleash"]) ? $_GET["unleash"] : "0";
 $date = isset($_GET["date"]) ? $_GET["date"] : "";
 $start_time = isset($_GET["start_time"]) ? $_GET["start_time"] : "";
 $end_time = isset($_GET["end_time"]) ? $_GET["end_time"] : "";
 
-$i = 0;
-$j = 0;
-$k = 0;
-$z = -1;
-$trip = 0;
+// rectify
+$model = ($model == "NAMM") ? "NAM": $model;
+$model = ($model == "GFSM") ? "GFS": $model;
+
+$apiurl = sprintf(
+    "https://mesonet.agron.iastate.edu/api/1/nws/bufkit.json?".
+    "model=%s&fall=1&station=%s",
+    $model,
+    $site,
+);
+$res = file_get_contents($apiurl);
+$jdata = json_decode($res, TRUE);
+
 $rd = 287;
 $g = 9.81;
-$prof_begin = 2;
-$frz_rain = 0;
-$sleet = 0;
 
-$europe = array('stpb', 'berl');
-$sites = array();
-// check if site is in master list.  If not, terminate script and tell user
-for ($z = 0; $z <= 1; $z++) {
-    if ($z == 0) {
-        $master_list = "../images/nam_bufrstations.txt";
-    } elseif ($z == 1) {
-        $master_list = "../images/gfs3_bufrstations.txt";
-    }
-    $data = file($master_list);
-    foreach ($data as $line) {
-        $d = explode(" ", trim(preg_replace('/\s+/', ' ', $line)));
-        $sites[] = strtolower($d[3]);
-    }
-}
-if (!(in_array($site, $sites)) && !(in_array($site, $europe))) {
-    die("Site " . $site . " is not available.  Try again.");
+$var = array('stn', 'date', 'pmsl', 'pres', 'sktc', 'stc1', 'snfl', 'wtns',
+'p01m', 'c01m', 'stc2', 'lcld', 'mcld', 'hcld', 'snra', 'uwnd', 'vwnd', 'r01m',
+'bfgr', 't2ms', 'q2ms', 'wxts', 'wxtp', 'wxtz', 'wxtr', 'ustm', 'vstm', 'hlcy',
+'sllh', 'wsym', 'cdbp', 'vsbk', 'td2m', 'evap', 'p03m', 'c03m', 'swem', 's03m',
+'show', 'lift', 'swet', 'kinx', 'lclp', 'pwat', 'totl', 'cape', 'lclt', 'cins',
+'eqlv', 'lfct', 'brch', 'buf_snow_sr', 'buf_snow_maxt', 'snra_constant', 'snra_maxt',
+'maxt', 'mom_wind_mean', 'mom_wind_max', 'tf', 'td', 'wspd', 'wdir', 'hiwc', 'qpf',
+'qpf_accum', 'wagl', 'frz_rain', 'sleet', 'rh', 'buf_snow_sr_rate', 'buf_snow_maxt_rate',
+'frz_rain_rate', 'sleet_rate', 'init');
+echo implode("\t", $var) ."\n";
+
+function get($ar, $key, $default=""){
+    return array_key_exists($key, $ar) ? $ar[$key] : $default;
 }
 
-if ($date != "" && strlen($date) == 10) {
-    $d = str_split($date);
-    $year = "" . $d[0] . "" . $d[1] . "" . $d[2] . "" . $d[3] . "";
-    $mon = "" . $d[4] . "" . $d[5] . "";
-    $day = "" . $d[6] . "" . $d[7] . "";
-    $hr = "" . $d[8] . "" . $d[9] . "";
-    $dCheck = strtotime($d[0] . "" . $d[1] . "" . $d[2] . "" . $d[3] . "-" . $d[4] . "" . $d[5] . "-" . $d[6] . "" . $d[7] . " " . $d[8] . "" . $d[9] . ":00:00 UTC");
-    //echo $dCheck."\n";
-} else {
-    $dCheck = strtotime(date("Y-m-d H:i:s"));
+// Loop over the profiles
+$initdt = "";
+foreach ($jdata["profiles"] as $bogus => $profile){
+    $params = $profile["parameters"];
+    $fhour = $profile["forecast_hour"];
+    $dt = new DateTime($profile["time"], new DateTimeZone("UTC"));
+    if ($fhour == 0){
+        $initdt = $dt->format("Y-m-d H:i:00");
+    }
+    $p01m = get($params, "P01M", 0);
+    $c01m = get($params, "C01M", 0);
+
+    echo "" . $params["STN"] . "\t" .
+    $dt->format("Y-m-d H:i:00") . "\t" .
+    $params["PMSL"] . "\t" .
+    $params["PRES"] . "\t" .
+    $params["SKTC"] . "\t" .
+    $params["STC1"] . "\t" .
+    get($params, "SNFL") . "\t" .
+    get($params, "WTNS") . "\t" .
+    $p01m . "\t" .
+    $c01m . "\t" .
+    get($params, "STC2") . "\t" .
+    get($params, "LCLD") . "\t" .
+    get($params, "MCLD") . "\t" .
+    get($params, "HCLD") . "\t" .
+    $snra[$i] . "\t" .
+    $uwnd[$i] . "\t" .
+    $vwnd[$i] . "\t" .
+    $r01m[$i] . "\t" .
+    $bfgr[$i] . "\t" .
+    $t2ms[$i] . "\t" .
+    $q2ms[$i] . "\t" .
+    $wxts[$i] . "\t" .
+    $wxtp[$i] . "\t" .
+    $wxtz[$i] . "\t" .
+    $wxtr[$i] . "\t" .
+    get($params, "USTM") . "\t" .
+    get($params, "VSTM") . "\t" .
+    get($params, "HLCY") . "\t" .
+    $sllh[$i] . "\t" .
+    $wsym[$i] . "\t" .
+    $cdbp[$i] . "\t" .
+    $vsbk[$i] . "\t" .
+    $td2m[$i] . "\t" .
+    get($params, "EVAP") . "\t" .
+    $p03m[$i] . "\t" .
+    $c03m[$i] . "\t" .
+    $swem[$i] . "\t" .
+    $s03m[$i] . "\t" .
+    $show[$i] . "\t" .
+    $lift[$i] . "\t" .
+    $swet[$i] . "\t" .
+    $kinx[$i] . "\t" .
+    $lclp[$i] . "\t" .
+    $pwat[$i] . "\t" .
+    $totl[$i] . "\t" .
+    $cape[$i] . "\t" .
+    $lclt[$i] . "\t" .
+    $cins[$i] . "\t" .
+    $eqlv[$i] . "\t" .
+    $lfct[$i] . "\t" .
+    $brch[$i] . "\t" .
+    $buf_snow_sr . "\t" .
+    $buf_snow_maxt . "\t" .
+    $ratio . "\t" .
+    $maxr . "\t" .
+    $maxt[$i] . "\t" .
+    round($mom_wind_mean[$i], 1) . "\t" .
+    round($mom_wind_max[$i], 1) . "\t" .
+    round($tf[$i], 1) . "\t" .
+    round($td[$i], 1) . "\t" .
+    round($wspd[$i], 1) . "\t" .
+    $wdir[$i] . "\t" .
+    $hi_wc[$i] . "\t" .
+    round($precip[$i], 2) . "\t" .
+    $precip_accum[$i] . "\t" .
+    $wagl[$i] . "\t" .
+    round($frz_rain, 2) . "\t" .
+    round($sleet, 2) . "\t" .
+    round($rhs[$i], 1) . "\t" .
+    round($buf_snow_sr_rate[$i], 2) . "\t" .
+    round($buf_snow_maxt_rate[$i], 2) . "\t" .
+    $frz_rain_rate . "\t" .
+    $sleet_rate . "\t" .
+    $initdt . "\n";
 }
 
-
-$var = array('stn', 'date', 'pmsl', 'pres', 'sktc', 'stc1', 'snfl', 'wtns', 'p01m', 'c01m', 'stc2', 'lcld', 'mcld', 'hcld', 'snra', 'uwnd', 'vwnd', 'r01m', 'bfgr', 't2ms', 'q2ms', 'wxts', 'wxtp', 'wxtz', 'wxtr', 'ustm', 'vstm', 'hlcy', 'sllh', 'wsym', 'cdbp', 'vsbk', 'td2m', 'evap', 'p03m', 'c03m', 'swem', 's03m', 'show', 'lift', 'swet', 'kinx', 'lclp', 'pwat', 'totl', 'cape', 'lclt', 'cins', 'eqlv', 'lfct', 'brch', 'buf_snow_sr', 'buf_snow_maxt', 'snra_constant', 'snra_maxt', 'maxt', 'mom_wind_mean', 'mom_wind_max', 'tf', 'td', 'wspd', 'wdir', 'hiwc', 'qpf', 'qpf_accum', 'wagl', 'frz_rain', 'sleet', 'rh', 'buf_snow_sr_rate', 'buf_snow_maxt_rate', 'frz_rain_rate', 'sleet_rate', 'init');
-
-$vars = count($var) - 1;
-
-//intialize some of the arrays
-for ($y = 0; $y <= 200; $y++) {
-    if ($model == "nam" || $model == "namm" || $model == "rap" || $model == "nam4km") {
-        $evap[] = 0;
-        $p03m[] = 0;
-        $c03m[] = 0;
-        $swem[] = 0;
-        $s03m[] = 0;
-    } elseif ($model == "gfs" || $model == "gfsm") {
-        $snfl[] = 0;
-        $stns[] = 0;
-        $wtns[] = 0;
-        $p01m[] = 0;
-        $c01m[] = 0;
-        $stc2[] = 0;
-        $snra[] = 0;
-        $r01m[] = 0;
-        $bfgr[] = 0;
-        $ustm[] = 0;
-        $vstm[] = 0;
-        $hlcy[] = 0;
-        $sllh[] = 0;
-        $wsym[] = 0;
-        $cdbp[] = 0;
-        $vsbk[] = 0;
-    }
-}
-
-if ($model == "nam") {
-    if ($date == "") {
-        $link = "nam/nam_" . $site . ".buf";
-    } else {
-        $link = "https://mtarchive.geol.iastate.edu/" . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/nam/nam_" . $site . ".buf";
-    }
-    $line_start = 11230;
-    $line_end = 11739;
-    $hrs = 84;
-} elseif ($model == "namm") {
-    if ($date == "") {
-        $link = "namm/namm_" . $site . ".buf";
-    } else {
-        $link = "https://mtarchive.geol.iastate.edu/" . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/nam/namm_" . $site . ".buf";
-    }
-    $line_start = 11230;
-    $line_end = 11739;
-    $hrs = 84;
-} elseif ($model == "nam4km") {
-    if ($date == "") {
-        $link = "nam4km/nam4km_" . $site . ".buf";
-    } else {
-        $link = "https://mtarchive.geol.iastate.edu/" . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/nam4km/nam4km_" . $site . ".buf";
-    }
-    $line_start = 8062;
-    $line_end = 8427;
-    $hrs = 60;
-} elseif ($model == "sref") {
-    if ($unleash == 1) {
-        system("unzip -oq sref/sref_" . $site . ".buz -d /home/ckarsten/WWW/bufkit/data/sref_temp/");
-        $sref_file = "/home/ckarsten/WWW/bufkit/data/sref_temp/sref_" . $site . ".buf";
-        $link = $sref_file;
-    } else {
-        $link = "/home/ckarsten/WWW/bufkit/data/sref_temp/sref_" . $site . ".buf";
-    }
-    $line_start = 6980;
-    $prof_begin = $line_start - 6978;
-    if ($member == 2) {
-        $line_start = 14471;
-        $prof_begin = $line_start - 6978;
-    } elseif ($member == 3) {
-        $line_start = 21962;
-        $prof_begin = $line_start - 6978;
-    } elseif ($member == 4) {
-        $line_start = 29453;
-        $prof_begin = $line_start - 6978;
-    } elseif ($member == 5) {
-        $line_start = 36944;
-        $prof_begin = $line_start - 6978;
-    } elseif ($member == 6) {
-        $line_start = 46985;
-        $prof_begin = $line_start - 9528;
-    } elseif ($member == 7) {
-        $line_start = 57026;
-        $prof_begin = $line_start - 9528;
-    } elseif ($member == 8) {
-        $line_start = 67067;
-        $prof_begin = $line_start - 9528;
-    } elseif ($member == 9) {
-        $line_start = 77108;
-        $prof_begin = $line_start - 9528;
-    } elseif ($member == 10) {
-        $line_start = 87149;
-        $prof_begin = $line_start - 9528;
-    } elseif ($member == 11) {
-        $line_start = 97190;
-        $prof_begin = $line_start - 9528;
-    } elseif ($member == 12) {
-        $line_start = 107401;
-        $prof_begin = $line_start - 9698;
-    } elseif ($member == 13) {
-        $line_start = 117612;
-        $prof_begin = $line_start - 9698;
-    } elseif ($member == 14) {
-        $line_start = 127823;
-        $prof_begin = $line_start - 9698;
-    } elseif ($member == 15) {
-        $line_start = 138034;
-        $prof_begin = $line_start - 9698;
-    } elseif ($member == 16) {
-        $line_start = 148245;
-        $prof_begin = $line_start - 9698;
-    } elseif ($member == 17) {
-        $line_start = 154546;
-        $prof_begin = $line_start - 5788;
-    } elseif ($member == 18) {
-        $line_start = 160847;
-        $prof_begin = $line_start - 5788;
-    } elseif ($member == 19) {
-        $line_start = 167148;
-        $prof_begin = $line_start - 5788;
-    } elseif ($member == 20) {
-        $line_start = 173449;
-        $prof_begin = $line_start - 5788;
-    } elseif ($member == 21) {
-        $line_start = 179750;
-        $prof_begin = $line_start - 5788;
-    }
-    $line_end = $line_start + 509;
-    $hrs = 84;
-} elseif ($model == "gfs") {
-    if ($date == "") {
-        $link = "gfs/gfs3_" . $site . ".buf";
-    } else {
-        $link = "https://mtarchive.geol.iastate.edu/" . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/gfs/gfs3_" . $site . ".buf";
-    }
-    if ($date == "") {
-        $line_start = 19184;
-        $line_end = 19747;
-        $hrs = 140;
-    } elseif ($dCheck < 1500638400) {
-        $line_start = 8548;
-        $line_end = 8791;
-        $hrs = 60;
-    } elseif ($dCheck < 1616414400) {
-        $line_start = 19748;
-        $line_end = 20311;
-        $hrs = 140;
-    } else {
-        $line_start = 19184;
-        $line_end = 19747;
-        $hrs = 140;
-    }
-} elseif ($model == "gfsm") {
-    if ($date == "") {
-        $link = "gfsm/gfs3_" . $site . ".buf";
-    } else {
-        $link = "https://mtarchive.geol.iastate.edu/" . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/gfs/gfs3_" . $site . ".buf";
-    }
-    if ($date == "") {
-        $line_start = 19184;
-        $line_end = 19747;
-        $hrs = 140;
-    } elseif ($dCheck < 1500638400) {
-        $line_start = 8548;
-        $line_end = 8791;
-        $hrs = 60;
-    } elseif ($dCheck < 1616414400) {
-        $line_start = 19748;
-        $line_end = 20311;
-        $hrs = 140;
-    } else {
-        $line_start = 19184;
-        $line_end = 19747;
-        $hrs = 140;
-    }
-} elseif ($model == "rap" || $model == "ruc") {
-    if ($date == "" && $model == "rap") {
-        $link = "rap/rap_" . $site . ".buf";
-        $fh = @fopen($link, "r");
-        if ($fh == false) {
-            die();
-        }
-        while (($line = fgets($fh)) !== false) {
-            $e = explode(" ", trim($line));
-            if (@$e[0] == "STID") {
-                $hr = substr($e[8], 7, 2);
-                break;
-            }
-        }
-
-        if ($hr == "03" || $hr == "09" || $hr == "15" || $hr == "21") {
-            $line_start = 5834;
-            $line_end = 6145;
-            $hrs = 51;
-        } else {
-            $line_start = 2474;
-            $line_end = 2605;
-            $hrs = 21;
-        }
-    } elseif ($dCheck >= 1606921200) {
-        $link = "https://mtarchive.geol.iastate.edu/" . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/rap/rap_" . $site . ".buf";
-        if ($hr == "03" || $hr == "09" || $hr == "15" || $hr == "21") {
-            $line_start = 5834;
-            $line_end = 6145;
-            $hrs = 51;
-        } else {
-            $line_start = 2474;
-            $line_end = 2605;
-            $hrs = 21;
-        }
-    } elseif ($dCheck >= 1566594000) {
-        $link = "https://mtarchive.geol.iastate.edu/" . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/rap/rap_" . $site . ".buf";
-        if ($hr == "03" || $hr == "09" || $hr == "15" || $hr == "21") {
-            $line_start = 4490;
-            $line_end = 4729;
-            $hrs = 39;
-        } else {
-            $line_start = 2474;
-            $line_end = 2605;
-            $hrs = 21;
-        }
-    } elseif ($dCheck >= 1531396812) {
-        $link = "https://mtarchive.geol.iastate.edu/" . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/rap/rap_" . $site . ".buf";
-        if ($hr == "03" || $hr == "09" || $hr == "15" || $hr == "21") {
-            $line_start = 2810;
-            $line_end = 2959;
-            $hrs = 24;
-        } else {
-            $line_start = 2474;
-            $line_end = 2605;
-            $hrs = 21;
-        }
-    } elseif ($dCheck >= 1471953600) {
-        $link = "https://mtarchive.geol.iastate.edu/" . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/rap/rap_" . $site . ".buf";
-        $line_start = 2474;
-        $line_end = 2605;
-        $hrs = 21;
-    } elseif ($year >= 2012 && $mon >= 05 && $day >= 01) {
-        $link = "https://mtarchive.geol.iastate.edu/" . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/rap/rap_" . $site . ".buf";
-        $line_start = 2138;
-        $line_end = 2251;
-        $hrs = 18;
-    } else {
-        $link = "https://mtarchive.geol.iastate.edu/" . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/ruc/ruc_" . $site . ".buf";
-        $line_start = 2138;
-        $line_end = 2251;
-        $hrs = 18;
-    }
-} elseif ($model == "hrrr") {
-    if ($date == "") {
-        $link = "hrrr/hrrr_" . $site . ".buf";
-        $fh = @fopen($link, "r");
-        if ($fh == false) {
-            die();
-        }
-        while (($line = fgets($fh)) !== false) {
-            $e = explode(" ", trim($line));
-            if (@$e[0] == "STID") {
-                $hr = substr($e[8], 7, 2);
-                break;
-            }
-        }
-
-        if ($hr == "00" || $hr == "06" || $hr == "12" || $hr == "18") {
-            $line_start = 4154;
-            $line_end = 4375;
-            $hrs = 36;
-        } else {
-            $line_start = 2138;
-            $line_end = 2251;
-            $hrs = 18;
-        }
-    } else {
-        $link = "https://mtarchive.geol.iastate.edu/" . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/hrrr/hrrr_" . $site . ".buf";
-        if ($hr == "00" || $hr == "06" || $hr == "12" || $hr == "18") {
-            $line_start = 4154;
-            $line_end = 4375;
-            $hrs = 36;
-        } else {
-            $line_start = 2138;
-            $line_end = 2251;
-            $hrs = 18;
-        }
-    }
-}
-//echo $year.",".$mon.",".$day.",".$hr."\n";
-//echo $line_start.",".$line_end.",".$hrs;
-//die();
-
-$fh = @fopen($link, "r");
-if ($fh == false) {
-    die();
-}
-
-while (($line = fgets($fh)) !== false) {
-    $i++;
-    if ($i > $line_end) {
-        break;
-    }
-    $d = explode(" ", trim($line));
-    $d2 = trim($line);
-    if ($d2 == "" || @$d[0] == "STN") {
-        $trip = 0;
-        $k = 0;
-    } elseif ($i >= $line_start && $i <= $line_end) {
-        $j++;
-        if ($j == 1) {
-            if ($model == "nam" || $model == "namm" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
-                $stn[] = $d[0];
-                $q = str_split($d[1]);
-                $mdate[] = "20" . $q[0] . "" . $q[1] . "-" . $q[2] . "" . $q[3] . "-" . $q[4] . "" . $q[5] . " " . $q[7] . "" . $q[8] . ":00:00";
-                $pmsl[] = $d[2];
-                $pres[] = $d[3];
-                $sktc[] = $d[4];
-                $stc1[] = $d[5];
-                $snfl[] = $d[6];
-                $wtns[] = $d[7];
+/*
             } elseif ($model == "gfs" || $model == "gfsm") {
-                $stn[] = $d[0];
-                $q = str_split($d[1]);
-                $mdate[] = "20" . $q[0] . "" . $q[1] . "-" . $q[2] . "" . $q[3] . "-" . $q[4] . "" . $q[5] . " " . $q[7] . "" . $q[8] . ":00:00";
-                $pmsl[] = $d[2];
-                $pres[] = $d[3];
-                $sktc[] = $d[4];
-                $stc1[] = $d[5];
-                $evap[] = $d[6];
                 if (count($pmsl) <= 121) {
-                    /*
-                    if((count($pmsl)-2) % 3 == 0 || (count($pmsl)-1) % 3 == 0){
-                        $offset1 = $p03m[count($p03m)-1];
-                        $offset2 = $qpf[count($qpf)-1];
-                        $p03m[] = $d[7] - $offset1;
-                        $qpf = ($d[7] * 0.0393700787) - $offset2;
-                        if($d[0] < 0){
-                                                $qpf = 0;
-                                        }
-                                        $precip[] = $qpf; 
-                                        $precip_accum[] = array_sum($precip);
-                                }
-                    else{
-                        $p03m[] = $d[7];
-                                                $qpf = $d[7] * 0.0393700787;
-                                                if($d[0] < 0){
-                                                        $qpf = 0;
-                                                }
-                                                $precip[] = $qpf;
-                                                $precip_accum[] = array_sum($precip);
-                    }
-                    */
                     if ((count($pmsl) - 1) % 3 == 0) {
                         $p03m[] = $d[7];
                         $qpf = $d[7] * 0.0393700787;
@@ -485,7 +203,7 @@ while (($line = fgets($fh)) !== false) {
                 $tf[] = $temp_f;
                 $wind_10m = pow((($d[1] * $d[1]) + ($d[2] * $d[2])), (1 / 2)) * 2.23693629;
                 $wspd[] = $wind_10m;
-                $wind_dir = @rad2deg(atan($d[2] / $d[1]));
+                $wind_dir = rad2deg(atan($d[2] / $d[1]));
                 if ($d[1] < 0 && $d[2] > 0) {
                     $wind_dir = $wind_dir + 180;
                 }
@@ -508,7 +226,7 @@ while (($line = fgets($fh)) !== false) {
                 $tf[] = $temp_f;
                 $wind_10m = pow((($gfs_u * $gfs_u) + ($d[0] * $d[0])), (1 / 2)) * 2.23693629;
                 $wspd[] = $wind_10m;
-                $wind_dir = @rad2deg(atan($d[0] / $gfs_u));
+                $wind_dir = ($gfs_u != 0) ? rad2deg(atan($d[0] / $gfs_u)): 0;
                 if ($gfs_u < 0 && $d[0] > 0) {
                     $wind_dir = $wind_dir + 180;
                 }
@@ -539,8 +257,6 @@ while (($line = fgets($fh)) !== false) {
             }
         } elseif ($j == 5) {
             if ($model == "nam" || $model == "namm" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
-                $vstm[] = $d[0];
-                $hlcy[] = $d[1];
                 $sllh[] = $d[2];
                 $wsym[] = $d[3];
                 $cdbp[] = $d[4];
@@ -603,8 +319,8 @@ while (($line = fgets($fh)) !== false) {
                         if (count($mom_wind) == 0) {
                             $mom_wind_mean[$z] = 0;
                         } else {
-                            $mom_wind_mean[$z] = round(array_sum(@$mom_wind) / count(@$mom_wind), 2);
-                            $mom_wind_max[$z] = @$mom_wind[count(@$mom_wind) - 1];
+                            $mom_wind_mean[$z] = round(array_sum($mom_wind) / count($mom_wind), 2);
+                            $mom_wind_max[$z] = $mom_wind[count($mom_wind) - 1];
                         }
                         //print_r($mom_wind);
                         //echo "".$mom_wind_mean[$z].",".$mom_wind_max[$z]."\n";
@@ -647,36 +363,36 @@ while (($line = fgets($fh)) !== false) {
             }
         }
     } elseif ($i >= $prof_begin && $i < $line_start) {
-        if (@$d[0] == "CFRL" || @$d[0] == "HGHT") {
+        if ($d[0] == "CFRL" || $d[0] == "HGHT") {
             $trip = 1;
             $mom_trip = 1;
             $z++;
-        } elseif (@$d[0] == "SHOW") {
+        } elseif ($d[0] == "SHOW") {
             $show[] = $d[2];
             $lift[] = $d[5];
             $swet[] = $d[8];
             $kinx[] = $d[11];
-        } elseif (@$d[0] == "LCLP") {
+        } elseif ($d[0] == "LCLP") {
             $lclp[]    = $d[2];
             $pwat[]    = $d[5] * 0.0393700787;
             $totl[]    = $d[8];
             $cape[] = $d[11];
-        } elseif (@$d[0] == "LCLT") {
+        } elseif ($d[0] == "LCLT") {
             $lclt[] = $d[2];
             $cins[]    = $d[5];
             $eqlv[]    = $d[8];
             $lfct[] = $d[11];
-        } elseif (@$d[0] == "BRCH") {
+        } elseif ($d[0] == "BRCH") {
             $brch[] = $d[2];
-        } elseif (@$d[6] == "SELV") {
+        } elseif (sizeof($d) > 6 && $d[6] == "SELV") {
             $selv = $d[8];
         }
     }
 }
 
 if (empty($start_time) && empty($end_time)) {
-    $start_time = strtotime(@$mdate[0]);
-    $end_time = strtotime(@$mdate[$hrs]);
+    $start_time = strtotime($mdate[0]);
+    $end_time = strtotime($mdate[$hrs]);
 }
 
 for ($i = -1; $i <= $hrs; $i++) {
@@ -690,38 +406,38 @@ for ($i = -1; $i <= $hrs; $i++) {
     } else {
         $frz_rain_rate = 0;
         $sleet_rate = 0;
-        if (@$wxts[$i] == 1 || @$wsym[$i] == 70 || @$wsym[$i] == 71 || @$wsym[$i] == 72 || @$wsym[$i] == 73 || @$wsym[$i] == 74 || @$wsym[$i] == 75) {
+        if ($wxts[$i] == 1 || $wsym[$i] == 70 || $wsym[$i] == 71 || $wsym[$i] == 72 || $wsym[$i] == 73 || $wsym[$i] == 74 || $wsym[$i] == 75) {
             // calculate max temp in profile snow ratio
-            if (@$maxt[$i] >= 2) {
+            if ($maxt[$i] >= 2) {
                 $maxr = 0;
-            } elseif (@$maxt[$i] >= 0) {
+            } elseif ($maxt[$i] >= 0) {
                 //$m = -8;
                 //$b = 16;
                 //$maxr = round((($m*$maxt[$i]) + $b),0);
                 $maxr = 10;
-            } elseif (@$maxt[$i] >= -10) {
+            } elseif ($maxt[$i] >= -10) {
                 $m = -17 / 11;
                 $b = 10;
                 $maxr = round((($m * $maxt[$i]) + $b), 0);
-            } elseif (@$maxt[$i] >= 18) {
+            } elseif ($maxt[$i] >= 18) {
                 $maxr = 25;
-            } elseif (@$maxt[$i] >= 22) {
+            } elseif ($maxt[$i] >= 22) {
                 $m = 5 / 2;
                 $b = 67.5;
                 $maxr = round((($m * $maxt[$i]) + $b), 0);
-            } elseif (@$maxt[$i] < 22) {
+            } elseif ($maxt[$i] < 22) {
                 $maxr = 15;
             }
         } else {
             $maxr = 0;
         }
         if ($model == "nam" || $model == "namm" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
-            if (@$wsym[$i] >= 70 && @$wsym[$i] <= 75) {
-                $buf_snow_sr = @round($p01m[$i] * $ratio * 0.0393700787, 1);
+            if ($wsym[$i] >= 70 && $wsym[$i] <= 75) {
+                $buf_snow_sr = round($p01m[$i] * $ratio * 0.0393700787, 1);
             } else {
                 $buf_snow_sr = 0;
             }
-            $buf_snow_maxt = @round($p01m[$i] * $maxr * 0.0393700787, 1);
+            $buf_snow_maxt = round($p01m[$i] * $maxr * 0.0393700787, 1);
             if ($wxtz[$i] == 1) {
                 $frz_rain = $frz_rain + ($p01m[$i] * 0.0393700787);
                 $frz_rain_rate = round($p01m[$i] * 0.0393700787, 2);
@@ -731,12 +447,12 @@ for ($i = -1; $i <= $hrs; $i++) {
                 $sleet_rate = round($p01m[$i] * 0.0393700787, 2);
             }
         } elseif ($model == "gfs" || $model == "gfsm") {
-            if (@$wxts[$i] == 1) {
-                $buf_snow_sr = @round(@$p03m[$i] * $ratio * 0.0393700787, 1);
+            if ($wxts[$i] == 1) {
+                $buf_snow_sr = round($p03m[$i] * $ratio * 0.0393700787, 1);
             } else {
                 $buf_snow_sr = 0;
             }
-            $buf_snow_maxt = @round(@$p03m[$i] * $maxr * 0.0393700787, 1);
+            $buf_snow_maxt = round($p03m[$i] * $maxr * 0.0393700787, 1);
             $factor = 1;
             if ($i > 120) {
                 $factor = 3;
@@ -750,11 +466,11 @@ for ($i = -1; $i <= $hrs; $i++) {
                 $sleet_rate = round(($p03m[$i] * 0.0393700787) / $factor, 2);
             }
         }
-        if (@$mom_wind_mean[$i] == 0) {
-            @$mom_wind_mean[$i] = @$wspd[$i];
+        if ($mom_wind_mean[$i] == 0) {
+            $mom_wind_mean[$i] = $wspd[$i];
         }
-        if (@$mom_wind_max[$i] == 0) {
-            @$mom_wind_max[$i] = @$wspd[$i];
+        if ($mom_wind_max[$i] == 0) {
+            $mom_wind_max[$i] = $wspd[$i];
         }
         if ($i == 0) {
             $buf_snow_sr_rate[$i] = 0;
@@ -768,14 +484,11 @@ for ($i = -1; $i <= $hrs; $i++) {
             $buf_snow_sr_rate[$i] = $buf_snow_sr;
             $buf_snow_maxt_rate[$i] = $buf_snow_maxt;
         }
-        if (strtotime(@$mdate[$i]) >= $start_time && strtotime(@$mdate[$i]) <= $end_time) {
-            echo "" . @$stn[$i] . "\t" . @$mdate[$i] . "\t" . @$pmsl[$i] . "\t" . @$pres[$i] . "\t" . @$sktc[$i] . "\t" . @$stc1[$i] . "\t" . @$snfl[$i] . "\t" . @$wtns[$i] . "\t" . @$p01m[$i] . "\t" . @$c01m[$i] . "\t" . @$stc2[$i] . "\t" . @$lcld[$i] . "\t" . @$mcld[$i] . "\t" . @$hcld[$i] . "\t" . @$snra[$i] . "\t" . @$uwnd[$i] . "\t" . @$vwnd[$i] . "\t" . @$r01m[$i] . "\t" . @$bfgr[$i] . "\t" . @$t2ms[$i] . "\t" . @$q2ms[$i] . "\t" . @$wxts[$i] . "\t" . @$wxtp[$i] . "\t" . @$wxtz[$i] . "\t" . @$wxtr[$i] . "\t" . @$ustm[$i] . "\t" . @$vstm[$i] . "\t" . @$hlcy[$i] . "\t" . @$sllh[$i] . "\t" . @$wsym[$i] . "\t" . @$cdbp[$i] . "\t" . @$vsbk[$i] . "\t" . @$td2m[$i] . "\t" . @$evap[$i] . "\t" . @$p03m[$i] . "\t" . @$c03m[$i] . "\t" . @$swem[$i] . "\t" . @$s03m[$i] . "\t" . @$show[$i] . "\t" . @$lift[$i] . "\t" . @$swet[$i] . "\t" . @$kinx[$i] . "\t" . @$lclp[$i] . "\t" . @$pwat[$i] . "\t" . @$totl[$i] . "\t" . @$cape[$i] . "\t" . @$lclt[$i] . "\t" . @$cins[$i] . "\t" . @$eqlv[$i] . "\t" . @$lfct[$i] . "\t" . @$brch[$i] . "\t" . @$buf_snow_sr . "\t" . @$buf_snow_maxt . "\t" . @$ratio . "\t" . @$maxr . "\t" . @$maxt[$i] . "\t" . round(@$mom_wind_mean[$i], 1) . "\t" . round(@$mom_wind_max[$i], 1) . "\t" . round(@$tf[$i], 1) . "\t" . round(@$td[$i], 1) . "\t" . round(@$wspd[$i], 1) . "\t" . @$wdir[$i] . "\t" . @$hi_wc[$i] . "\t" . @round($precip[$i], 2) . "\t" . @$precip_accum[$i] . "\t" . @$wagl[$i] . "\t" . round($frz_rain, 2) . "\t" . round($sleet, 2) . "\t" . round($rhs[$i], 1) . "\t" . @round($buf_snow_sr_rate[$i], 2) . "\t" . @round($buf_snow_maxt_rate[$i], 2) . "\t" . @$frz_rain_rate . "\t" . @$sleet_rate . "\t" . @$mdate[0] . "\n";
+        if (strtotime($mdate[$i]) >= $start_time && strtotime($mdate[$i]) <= $end_time) {
+
         }
     }
 }
 
 fclose($fh);
-
-if ($model == "sref" && $unleash == 1) {
-    system("rm $sref_file");
-}
+*/
