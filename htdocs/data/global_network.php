@@ -12,6 +12,11 @@ $a_day = date("d", $at);
 
 $archive = MTARCHIVE . $a_year . "/" . $a_month . "/" . $a_day . "/bufkit/";
 
+$init_mon = null;
+$init_day = null;
+$init_year = null;
+$init = null;
+
 $c = 0;
 $d = 5;
 $lines = get_realtime_lines("nam/nam_kdsm.buf");
@@ -125,7 +130,7 @@ foreach ($data as $line) {
     $site_gfs = $buf[4];
     $site_nam = $buf[5];
     $site_rap = $buf[6];
-    $site_sref = $buf[7];
+    $site_rrfs = $buf[7];
 
     $sym = "#";
     $site_l = $site;
@@ -213,14 +218,14 @@ foreach ($data as $line) {
         $rap_l = "";
         $rap_cobb = "";
     }
-    if ($site_sref != "---") {
-        $sref = "https://metfs1.agron.iastate.edu/data/bufkit/sref/sref_" . $site . ".buz";
-        $sref_l = "https://metfs1.agron.iastate.edu/data/bufkit/sref/sref_" . $site_l . ".buz";
-        $sref_i = "Latest SREF Profile";
+    if ($site_rrfs != "---") {
+        $rrfs = "https://metfs1.agron.iastate.edu/data/bufkit/rrfs/rrfs_" . $site . ".buf";
+        $rrfs_l = "https://metfs1.agron.iastate.edu/data/bufkit/rrfs/rrfs_" . $site_l . ".buf";
+        $rrfs_i = "Latest RRFS Profile";
     } else {
-        $sref_i = "SREF Not Available For " . strtoupper($site) . "";
-        $sref = "";
-        $sref_l = "";
+        $rrfs_i = "RRFS Not Available For " . strtoupper($site) . "";
+        $rrfs = "";
+        $rrfs_l = "";
     }
 
 
@@ -228,7 +233,7 @@ foreach ($data as $line) {
     $st2 = "\"nam_l\":\"" . $nam_l . "\",\"namm_l\":\"" . $namm_l . "\",\"gfs_l\":\"" . $gfs_l . "\",\"gfsm_l\":\"" . $gfsm_l . "\",\"rap_l\":\"" . $rap_l . "\",\"a_link\":\"" . $archive . "\",";
     $st3 = "\"nam_cobb\":\"" . $nam_cobb . "\",\"namm_cobb\":\"" . $namm_cobb . "\",\"gfs_cobb\":\"" . $gfs_cobb . "\",\"gfsm_cobb\":\"" . $gfsm_cobb . "\",\"rap_cobb\":\"" . $rap_cobb . "\",";
     $st4 = "\"sid\":\"Site: " . strtoupper($site) . "\",\"nam\":\"" . $nam_i . "\",\"namm\":\"" . $namm_i . "\",\"gfs\":\"" . $gfs_i . "\",\"gfsm\":\"" . $gfsm_i . "\",\"rap\":\"" . $rap_i . "\",\"xname\":\"" . $x_name . "\",";
-    $st41 = "\"srname\":\"" . $sref . "\",\"sref_l\":\"" . $sref_l . "\",\"sref_i\":\"" . $sref_i . "\",\"disc\":\"\",";
+    $st41 = "\"rrfs\":\"" . $rrfs . "\",\"rrfs_l\":\"" . $rrfs_l . "\",\"rrfs_i\":\"" . $rrfs_i . "\",\"disc\":\"\",";
     $st4_1 = "\"ewrf_id1\":\"" . $ewrf_id1 . "\",\"ewrf_id2\":\"" . $ewrf_id2 . "\",\"ewrf_l1\":\"" . $ewrf_l1 . "\",\"ewrf_l2\":\"" . $ewrf_l2 . "\",\"meteo\":\"" . $load . "\",\"view_nam_cobb\":\"" . $view_nam_cobb . "\",\"view_gfs_cobb\":\"" . $view_gfs_cobb . "\"}";
     if ($count == 2098) {
         $st5 = ",\"geometry\":{\"type\":\"Point\",\"coordinates\":[\"" . $lon . "\",\"" . $lat . "\"]}}";
