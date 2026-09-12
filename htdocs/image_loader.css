@@ -1,0 +1,118 @@
+body {
+    background: #FFFFFF;
+}
+
+th {
+    background: #dddddd;
+    font-size: 10pt;
+    font-family: helvetica;
+    text-align: center;
+}
+
+td {
+    font-size: 8pt;
+    font-family: helvetica;
+}
+
+h2 {
+    font-size: 18pt;
+    font-family: helvetica;
+    text-align: center;
+}
+
+#menu {
+    display: block;
+    position: fixed;
+    left: 1040px;
+    top: 98px;
+}
+
+#menus {
+    display: block;
+    position: absolute;
+    left: 2px;
+    top: 243px;
+}
+
+#header {
+    display: block;
+    position: fixed;
+    left: 2px;
+    top: 0px;
+}
+
+#hoverText {
+    display: block;
+    position: fixed;
+    left: 2px;
+    top: 98px;
+}
+
+#sidemenus {
+    display: block;
+    position: absolute;
+    left: 1112px;
+    top: 243px;
+}
+
+* html #menu {
+    position: absolute;
+}
+
+* html #menus {
+    position: absolute;
+}
+
+* html #header {
+    position: absolute;
+}
+
+* html #hoverText {
+    position: absolute;
+}
+
+* html #sidemenus {
+    position: absolute;
+}
+
+.hoverText {
+    background: #FFFFFF;
+    border: solid black 3px;
+    height: 148px;
+    width: 1040px;
+}
+
+.header {
+    background: #FFFFFF;
+    border: solid black 3px;
+    height: 100px;
+    width: 1260px;
+}
+
+.menu {
+    background: #FFFFFF;
+    border: solid black 3px;
+    width: 222;
+    height: 148;
+}
+
+.menus {
+    background: #FFFFFF;
+    border: solid black 3px;
+    height: 2000;
+    width: 1260;
+}
+
+.basemap {
+    position: absolute;
+    left: 0px;
+    top: 40px;
+    border: solid black 3px;
+}
+
+.sidemenus {
+    background: #FFFFFF;
+    border: solid black 3px;
+    height: 4147;
+    width: 150;
+}

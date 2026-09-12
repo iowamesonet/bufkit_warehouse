@@ -54,3 +54,29 @@ function get_str404($name, $default = null, $maxlength = null)
     }
     return $val;
 }
+
+/**
+ * Return the checked="yes" attribute markup when $cond is truthy, else empty string
+ * @param mixed $cond The condition to check
+ * @return string The `checked="yes"` markup or an empty string
+ */
+function checked_attr($cond)
+{
+    return $cond ? "checked=\"yes\"" : "";
+}
+
+/**
+ * Render <option> tags for a <select>, marking the matching value as Selected
+ * @param string|int $selected The currently selected value
+ * @param array $options Map of option value => option label
+ * @return string The generated <option> markup
+ */
+function render_select_options($selected, array $options)
+{
+    $html = "";
+    foreach ($options as $value => $label) {
+        $sel = ($selected == $value) ? " Selected" : "";
+        $html .= "<option value=\"$value\"$sel>$label\n";
+    }
+    return $html;
+}

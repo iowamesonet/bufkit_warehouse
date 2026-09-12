@@ -10,6 +10,7 @@ $site = strtolower(get_str404("site", "kdsm"));
 $var = get_str404("var", "tf");
 $nam = get_str404("nam", "1");
 $nam4km = get_str404("nam4km", "1");
+$rrfs = get_str404("rrfs", "1");
 $namm = get_str404("namm", "1");
 $gfs = get_str404("gfs", "1");
 $gfsm = get_str404("gfsm", "1");
@@ -54,122 +55,38 @@ if ($year == "" || $month == "" || $day == "" || $hour == "") {
 
 $on_list = array($nam, $namm, $gfs, $gfsm, $rap, $nam_mos, $gfs_mos, $gfsm_mos, $con, $nws, $obs, $compaction, $cobb, $max_t, $mean_mt, $max_mt, $mean, $archive);
 
-if (in_array("on", $on_list)) {
-    if ($compaction == "on") {
-        $compaction_check = 1;
-    } else {
-        $compaction_check = 0;
-    }
-    if ($cobb == "on") {
-        $cobb_check = 1;
-    } else {
-        $cobb_check = 0;
-    }
-    if ($max_t == "on") {
-        $max_t_check = 1;
-    } else {
-        $max_t_check = 0;
-    }
-    if ($mean_mt == "on") {
-        $mean_mt_check = 1;
-    } else {
-        $mean_mt_check = 0;
-    }
-    if ($max_mt == "on") {
-        $max_mt_check = 1;
-    } else {
-        $max_mt_check = 0;
-    }
+// Each of these params is either "on" or absent; derive the corresponding *_check flag
+$toggle_fields = array(
+    "compaction" => $compaction,
+    "cobb" => $cobb,
+    "max_t" => $max_t,
+    "mean_mt" => $mean_mt,
+    "max_mt" => $max_mt,
+    "mean" => $mean,
+    "nam" => $nam,
+    "namm" => $namm,
+    "nam4km" => $nam4km,
+    "rrfs" => $rrfs,
+    "gfs" => $gfs,
+    "gfsm" => $gfsm,
+    "rap" => $rap,
+    "nam_mos" => $nam_mos,
+    "gfs_mos" => $gfs_mos,
+    "gfsm_mos" => $gfsm_mos,
+    "nws" => $nws,
+    "obs" => $obs,
+    "con" => $con,
+    "archive" => $archive,
+);
 
-    if ($mean == "on") {
-        $mean_check = 1;
-    } else {
-        $mean_check = 0;
-    }
-    if ($nam == "on") {
-        $nam_check = 1;
-    } else {
-        $nam_check = 0;
-    }
-    if ($namm == "on") {
-        $namm_check = 1;
-    } else {
-        $namm_check = 0;
-    }
-    if ($nam4km == "on") {
-        $nam4km_check = 1;
-    } else {
-        $nam4km_check = 0;
-    }
-    if ($gfs == "on") {
-        $gfs_check = 1;
-    } else {
-        $gfs_check = 0;
-    }
-    if ($gfsm == "on") {
-        $gfsm_check = 1;
-    } else {
-        $gfsm_check = 0;
-    }
-    if ($rap == "on") {
-        $rap_check = 1;
-    } else {
-        $rap_check = 0;
-    }
-    if ($nam_mos == "on") {
-        $nam_mos_check = 1;
-    } else {
-        $nam_mos_check = 0;
-    }
-    if ($gfs_mos == "on") {
-        $gfs_mos_check = 1;
-    } else {
-        $gfs_mos_check = 0;
-    }
-    if ($gfsm_mos == "on") {
-        $gfsm_mos_check = 1;
-    } else {
-        $gfsm_mos_check = 0;
-    }
-    if ($nws == "on") {
-        $nws_check = 1;
-    } else {
-        $nws_check = 0;
-    }
-    if ($obs == "on") {
-        $obs_check = 1;
-    } else {
-        $obs_check = 0;
-    }
-    if ($con == "on") {
-        $con_check = 1;
-    } else {
-        $con_check = 0;
-    }
-    if ($archive == "on") {
-        $archive_check = 1;
-    } else {
-        $archive_check = 0;
+if (in_array("on", $on_list)) {
+    foreach ($toggle_fields as $field_name => $field_val) {
+        ${$field_name . "_check"} = ($field_val == "on") ? 1 : 0;
     }
 } else {
-    $nam_check = 1;
-    $namm_check = 1;
-    $nam4km_check = 1;
-    $gfs_check = 1;
-    $gfsm_check = 1;
-    $rap_check = 1;
-    $nam_mos_check = 1;
-    $gfs_mos_check = 1;
-    $gfsm_mos_check = 1;
-    $con_check = 1;
-    $nws_check = 1;
-    $obs_check = 1;
-    $compaction_check = 1;
-    $cobb_check = 1;
-    $max_t_check = 1;
-    $mean_mt_check = 1;
-    $max_mt_check = 1;
-    $mean_check = 1;
+    foreach ($toggle_fields as $field_name => $field_val) {
+        ${$field_name . "_check"} = 1;
+    }
     $archive_check = 0;
 }
 
@@ -200,28 +117,12 @@ if ($check1 == $sym) {
 
 <head>
 
-    <div id="fb-root"></div>
-    <script>
-        (function(d, s, id) {
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) {
-                return;
-            }
-            js = d.createElement(s);
-            js.id = id;
-            js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=192828874111938";
-            fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));
-    </script>
-
     <script language="JavaScript">
         function disable2(archiveMode) {
             document.sidemenus.year.disabled = !(archiveMode);
             document.sidemenus.month.disabled = !(archiveMode);
             document.sidemenus.day.disabled = !(archiveMode);
             document.sidemenus.hour.disabled = !(archiveMode);
-            //document.sidemenus.nws.disabled = archiveMode;
-            //document.sidemenus.cobb.disabled = archiveMode;
         }
     </script>
 
@@ -242,126 +143,7 @@ if ($check1 == $sym) {
 bufkit documentation, bufkit files, bufkit download, bufkit links, install
 bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
 
-    <style rel="stylesheet" type="text/css">
-        body {
-            background: #FFFFFF;
-        }
-
-        th {
-            background: #dddddd;
-            font-size: 10pt;
-            font-family: helvetica;
-            text-align: center;
-        }
-
-        td {
-            font-size: 8pt;
-            font-family: helvetica;
-        }
-
-        h2 {
-            font-size: 18pt;
-            font-family: helvetica;
-            text-align: center;
-        }
-
-        #menu {
-            display: block;
-            position: fixed;
-            left: 1040px;
-            top: 98px;
-        }
-
-        #menus {
-            display: block;
-            position: absolute;
-            left: 2px;
-            top: 243px;
-        }
-
-        #header {
-            display: block;
-            position: fixed;
-            left: 2px;
-            top: 0px;
-        }
-
-        #hoverText {
-            display: block;
-            position: fixed;
-            left: 2px;
-            top: 98px;
-        }
-
-        #sidemenus {
-            display: block;
-            position: absolute;
-            left: 1112px;
-            top: 243px;
-        }
-
-        * html #menu {
-            position: absolute;
-        }
-
-        * html #menus {
-            position: absolute;
-        }
-
-        * html #header {
-            position: absolute;
-        }
-
-        * html #hoverText {
-            position: absolute;
-        }
-
-        * html #sidemenus {
-            position: absolute;
-        }
-
-        .hoverText {
-            background: #FFFFFF;
-            border: solid black 3px;
-            height: 148px;
-            width: 1040px;
-        }
-
-        .header {
-            background: #FFFFFF;
-            border: solid black 3px;
-            height: 100px;
-            width: 1260px;
-        }
-
-        .menu {
-            background: #FFFFFF;
-            border: solid black 3px;
-            width: 222;
-            height: 148;
-        }
-
-        .menus {
-            background: #FFFFFF;
-            border: solid black 3px;
-            height: 2000;
-            width: 1260;
-        }
-
-        .basemap {
-            position: absolute;
-            left: 0px;
-            top: 40px;
-            border: solid black 3px;
-        }
-
-        .sidemenus {
-            background: #FFFFFF;
-            border: solid black 3px;
-            height: 4147;
-            width: 150;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="image_loader.css">
 
     <title>Meteogram Generator</title>
 </head>
@@ -375,7 +157,7 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
 
                     <?php
 
-                    $var_set1 = "nam=" . $nam_check . "&namm=" . $namm_check . "&nam4km=" . $nam4km_check . "&gfs=" . $gfs_check . "&gfsm=" . $gfsm_check . "&rap=" . $rap_check . "&nam_mos=" . $nam_mos_check . "&gfs_mos=" . $gfs_mos_check . "&gfsm_mos=" . $gfsm_mos_check . "&nws=" . $nws_check . "&obs=" . $obs_check . "&con=" . $con_check . "";
+                    $var_set1 = "nam=" . $nam_check . "&namm=" . $namm_check . "&rrfs=". $rrfs_check . "&nam4km=" . $nam4km_check . "&gfs=" . $gfs_check . "&gfsm=" . $gfsm_check . "&rap=" . $rap_check . "&nam_mos=" . $nam_mos_check . "&gfs_mos=" . $gfs_mos_check . "&gfsm_mos=" . $gfsm_mos_check . "&nws=" . $nws_check . "&obs=" . $obs_check . "&con=" . $con_check . "";
                     $var_set2 = "max_t=" . $max_t_check . "&cobb=" . $cobb_check . "&compaction=" . $compaction_check . "&ratio=" . $ratio . "";
                     $var_set3 = "mean_mt=" . $mean_mt_check . "&max_mt=" . $max_mt_check . "&mean=" . $mean_check . "";
                     if ($archive_check == 1) {
@@ -415,56 +197,35 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
                         <p>
                         <table border="0" cellspacing="0" cellpadding="0">
                             <tr>
-                                <td width="55"><input type=checkbox name="nam" <?php if ($nam_check == 1) {
-                                                                                    echo "checked=\"yes\"";
-                                                                                } ?>>NAM</input></td>
-                                <td width="80"><input type=checkbox name="nam_mos" <?php if ($nam_mos_check == 1) {
-                                                                                        echo "checked=\"yes\"";
-                                                                                    } ?>>NAM MOS</input></td>
+                                <td width="55"><input type=checkbox name="nam" <?php echo checked_attr($nam_check == 1); ?>>NAM</input></td>
+                                <td width="80"><input type=checkbox name="nam_mos" <?php echo checked_attr($nam_mos_check == 1); ?>>NAM MOS</input></td>
                             </tr>
                             <tr>
-                                <td width="55"><input type=checkbox name="namm" <?php if ($namm_check == 1) {
-                                                                                    echo "checked=\"yes\"";
-                                                                                } ?>>NAMM</input></td>
-                                <td width="80"><input type=checkbox name="gfs_mos" <?php if ($gfs_mos_check == 1) {
-                                                                                        echo "checked=\"yes\"";
-                                                                                    } ?>>GFS MOS</input></td>
+                                <td width="55"><input type=checkbox name="namm" <?php echo checked_attr($namm_check == 1); ?>>NAMM</input></td>
+                                <td width="80"><input type=checkbox name="gfs_mos" <?php echo checked_attr($gfs_mos_check == 1); ?>>GFS MOS</input></td>
                             </tr>
                             <tr>
-                                <td width="55"><input type=checkbox name="gfs" <?php if ($gfs_check == 1) {
-                                                                                    echo "checked=\"yes\"";
-                                                                                } ?>>GFS</input></td>
-                                <td width="80"><input type=checkbox name="gfsm_mos" <?php if ($gfsm_mos_check == 1) {
-                                                                                        echo "checked=\"yes\"";
-                                                                                    } ?>>GFSM MOS</input></td>
+                                <td width="55"><input type=checkbox name="gfs" <?php echo checked_attr($gfs_check == 1); ?>>GFS</input></td>
+                                <td width="80"><input type=checkbox name="gfsm_mos" <?php echo checked_attr($gfsm_mos_check == 1); ?>>GFSM MOS</input></td>
                             </tr>
                             <tr>
-                                <td width="55"><input type=checkbox name="gfsm" <?php if ($gfsm_check == 1) {
-                                                                                    echo "checked=\"yes\"";
-                                                                                } ?>>GFSM</input></td>
-                                <td width="80"><input type=checkbox name="nws" <?php if ($nws_check == 1) {
-                                                                                    echo "checked=\"yes\"";
-                                                                                } ?>>NWS</input></td>
+                                <td width="55"><input type=checkbox name="gfsm" <?php echo checked_attr($gfsm_check == 1); ?>>GFSM</input></td>
+                                <td width="80"><input type=checkbox name="nws" <?php echo checked_attr($nws_check == 1); ?>>NWS</input></td>
                             </tr>
                             <tr>
-                                <td width="55"><input type=checkbox name="rap" <?php if ($rap_check == 1) {
-                                                                                    echo "checked=\"yes\"";
-                                                                                } ?>>RAP</input></td>
-                                <td width="80"><input type=checkbox name="obs" <?php if ($obs_check == 1) {
-                                                                                    echo "checked=\"yes\"";
-                                                                                } ?>>OBS</input></td>
+                                <td width="55"><input type=checkbox name="rap" <?php echo checked_attr($rap_check == 1); ?>>RAP</input></td>
+                                <td width="80"><input type=checkbox name="obs" <?php echo checked_attr($obs_check == 1); ?>>OBS</input></td>
                             </tr>
                         </table>
-                        <table border="0" cellspacing="0" cellpadding="0">
+                        <table cellspacing="0" cellpadding="0">
                             <tr>
-                                <td width="55"><input type=checkbox name="nam4km" <?php if ($nam4km_check == 1) {
-                                                                                        echo "checked=\"yes\"";
-                                                                                    } ?>>NAM 4km</input></td>
+                                <td width="55"><input type=checkbox name="nam4km" <?php echo checked_attr($nam4km_check == 1); ?>>NAM 4km</input></td>
                             </tr>
                             <tr>
-                                <td width="135"><input type=checkbox name="con" <?php if ($con_check == 1) {
-                                                                                    echo "checked=\"yes\"";
-                                                                                } ?>>MODEL AVERAGE</input></td>
+                                <td width="55"><input type=checkbox name="rrfs" <?php echo checked_attr($rrfs_check == 1); ?>>RRFS</input></td>
+                            </tr>
+                            <tr>
+                                <td width="135"><input type=checkbox name="con" <?php echo checked_attr($con_check == 1); ?>>MODEL AVERAGE</input></td>
                             </tr>
                         </table>
                         </p>
@@ -475,274 +236,49 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
                         <p>
                             Year:
                             <select name="year" disabled="disabled">
-                                <option value="2026" <?php if ($year == 2026) {
-                                                            echo "Selected";
-                                                        } ?>>2026
-                                <option value="2025" <?php if ($year == 2025) {
-                                                            echo "Selected";
-                                                        } ?>>2025
-                                <option value="2024" <?php if ($year == 2024) {
-                                                            echo "Selected";
-                                                        } ?>>2024
-                                <option value="2023" <?php if ($year == 2023) {
-                                                            echo "Selected";
-                                                        } ?>>2023
-                                <option value="2022" <?php if ($year == 2022) {
-                                                            echo "Selected";
-                                                        } ?>>2022
-                                <option value="2021" <?php if ($year == 2021) {
-                                                            echo "Selected";
-                                                        } ?>>2021
-                                <option value="2020" <?php if ($year == 2020) {
-                                                            echo "Selected";
-                                                        } ?>>2020
-                                <option value="2019" <?php if ($year == 2019) {
-                                                            echo "Selected";
-                                                        } ?>>2019
-                                <option value="2018" <?php if ($year == 2018) {
-                                                            echo "Selected";
-                                                        } ?>>2018
-                                <option value="2017" <?php if ($year == 2017) {
-                                                            echo "Selected";
-                                                        } ?>>2017
-                                <option value="2016" <?php if ($year == 2016) {
-                                                            echo "Selected";
-                                                        } ?>>2016
-                                <option value="2015" <?php if ($year == 2015) {
-                                                            echo "Selected";
-                                                        } ?>>2015
-                                <option value="2014" <?php if ($year == 2014) {
-                                                            echo "Selected";
-                                                        } ?>>2014
-                                <option value="2013" <?php if ($year == 2013) {
-                                                            echo "Selected";
-                                                        } ?>>2013
-                                <option value="2012" <?php if ($year == 2012) {
-                                                            echo "Selected";
-                                                        } ?>>2012
-                                <option value="2011" <?php if ($year == 2011) {
-                                                            echo "Selected";
-                                                        } ?>>2011
-                                </option>
+                                <?php
+                                $year_opts = array();
+                                for ($y = 2026; $y >= 2011; $y--) {
+                                    $year_opts[$y] = $y;
+                                }
+                                echo render_select_options($year, $year_opts);
+                                ?>
                             </select>
                         </p>
                         <p>
                             Month:
                             <select name="month" disabled="disabled">
-                                <option value="01" <?php if ($month == "01") {
-                                                        echo "Selected";
-                                                    } ?>>1
-                                <option value="02" <?php if ($month == "02") {
-                                                        echo "Selected";
-                                                    } ?>>2
-                                <option value="03" <?php if ($month == "03") {
-                                                        echo "Selected";
-                                                    } ?>>3
-                                <option value="04" <?php if ($month == "04") {
-                                                        echo "Selected";
-                                                    } ?>>4
-                                <option value="05" <?php if ($month == "05") {
-                                                        echo "Selected";
-                                                    } ?>>5
-                                <option value="06" <?php if ($month == "06") {
-                                                        echo "Selected";
-                                                    } ?>>6
-                                <option value="07" <?php if ($month == "07") {
-                                                        echo "Selected";
-                                                    } ?>>7
-                                <option value="08" <?php if ($month == "08") {
-                                                        echo "Selected";
-                                                    } ?>>8
-                                <option value="09" <?php if ($month == "09") {
-                                                        echo "Selected";
-                                                    } ?>>9
-                                <option value="10" <?php if ($month == "10") {
-                                                        echo "Selected";
-                                                    } ?>>10
-                                <option value="11" <?php if ($month == "11") {
-                                                        echo "Selected";
-                                                    } ?>>11
-                                <option value="12" <?php if ($month == "12") {
-                                                        echo "Selected";
-                                                    } ?>>12
-                                </option>
+                                <?php
+                                $month_opts = array();
+                                for ($m = 1; $m <= 12; $m++) {
+                                    $month_opts[sprintf("%02d", $m)] = $m;
+                                }
+                                echo render_select_options($month, $month_opts);
+                                ?>
                             </select>
                         </p>
                         <p>
                             Day:
                             <select name="day" disabled="disabled">
-                                <option value="01" <?php if ($day == "01") {
-                                                        echo "Selected";
-                                                    } ?>>1
-                                <option value="02" <?php if ($day == "02") {
-                                                        echo "Selected";
-                                                    } ?>>2
-                                <option value="03" <?php if ($day == "03") {
-                                                        echo "Selected";
-                                                    } ?>>3
-                                <option value="04" <?php if ($day == "04") {
-                                                        echo "Selected";
-                                                    } ?>>4
-                                <option value="05" <?php if ($day == "05") {
-                                                        echo "Selected";
-                                                    } ?>>5
-                                <option value="06" <?php if ($day == "06") {
-                                                        echo "Selected";
-                                                    } ?>>6
-                                <option value="07" <?php if ($day == "07") {
-                                                        echo "Selected";
-                                                    } ?>>7
-                                <option value="08" <?php if ($day == "08") {
-                                                        echo "Selected";
-                                                    } ?>>8
-                                <option value="09" <?php if ($day == "09") {
-                                                        echo "Selected";
-                                                    } ?>>9
-                                <option value="10" <?php if ($day == "10") {
-                                                        echo "Selected";
-                                                    } ?>>10
-                                <option value="11" <?php if ($day == "11") {
-                                                        echo "Selected";
-                                                    } ?>>11
-                                <option value="12" <?php if ($day == "12") {
-                                                        echo "Selected";
-                                                    } ?>>12
-                                <option value="13" <?php if ($day == "13") {
-                                                        echo "Selected";
-                                                    } ?>>13
-                                <option value="14" <?php if ($day == "14") {
-                                                        echo "Selected";
-                                                    } ?>>14
-                                <option value="15" <?php if ($day == "15") {
-                                                        echo "Selected";
-                                                    } ?>>15
-                                <option value="16" <?php if ($day == "16") {
-                                                        echo "Selected";
-                                                    } ?>>16
-                                <option value="17" <?php if ($day == "17") {
-                                                        echo "Selected";
-                                                    } ?>>17
-                                <option value="18" <?php if ($day == "18") {
-                                                        echo "Selected";
-                                                    } ?>>18
-                                <option value="19" <?php if ($day == "19") {
-                                                        echo "Selected";
-                                                    } ?>>19
-                                <option value="20" <?php if ($day == "20") {
-                                                        echo "Selected";
-                                                    } ?>>20
-                                <option value="21" <?php if ($day == "21") {
-                                                        echo "Selected";
-                                                    } ?>>21
-                                <option value="22" <?php if ($day == "22") {
-                                                        echo "Selected";
-                                                    } ?>>22
-                                <option value="23" <?php if ($day == "23") {
-                                                        echo "Selected";
-                                                    } ?>>23
-                                <option value="24" <?php if ($day == "24") {
-                                                        echo "Selected";
-                                                    } ?>>24
-                                <option value="25" <?php if ($day == "25") {
-                                                        echo "Selected";
-                                                    } ?>>25
-                                <option value="26" <?php if ($day == "26") {
-                                                        echo "Selected";
-                                                    } ?>>26
-                                <option value="27" <?php if ($day == "27") {
-                                                        echo "Selected";
-                                                    } ?>>27
-                                <option value="28" <?php if ($day == "28") {
-                                                        echo "Selected";
-                                                    } ?>>28
-                                <option value="29" <?php if ($day == "29") {
-                                                        echo "Selected";
-                                                    } ?>>29
-                                <option value="30" <?php if ($day == "30") {
-                                                        echo "Selected";
-                                                    } ?>>30
-                                <option value="31" <?php if ($day == "31") {
-                                                        echo "Selected";
-                                                    } ?>>31
-                                </option>
+                                <?php
+                                $day_opts = array();
+                                for ($dy = 1; $dy <= 31; $dy++) {
+                                    $day_opts[sprintf("%02d", $dy)] = $dy;
+                                }
+                                echo render_select_options($day, $day_opts);
+                                ?>
                             </select>
                         </p>
                         <p>
                             Hour:
                             <select name="hour" disabled="disabled">
-                                <option value="00" <?php if ($hour == "00") {
-                                                        echo "Selected";
-                                                    } ?>>0
-                                <option value="01" <?php if ($hour == "01") {
-                                                        echo "Selected";
-                                                    } ?>>1
-                                <option value="02" <?php if ($hour == "02") {
-                                                        echo "Selected";
-                                                    } ?>>2
-                                <option value="03" <?php if ($hour == "03") {
-                                                        echo "Selected";
-                                                    } ?>>3
-                                <option value="04" <?php if ($hour == "04") {
-                                                        echo "Selected";
-                                                    } ?>>4
-                                <option value="05" <?php if ($hour == "05") {
-                                                        echo "Selected";
-                                                    } ?>>5
-                                <option value="06" <?php if ($hour == "06") {
-                                                        echo "Selected";
-                                                    } ?>>6
-                                <option value="07" <?php if ($hour == "07") {
-                                                        echo "Selected";
-                                                    } ?>>7
-                                <option value="08" <?php if ($hour == "08") {
-                                                        echo "Selected";
-                                                    } ?>>8
-                                <option value="09" <?php if ($hour == "09") {
-                                                        echo "Selected";
-                                                    } ?>>9
-                                <option value="10" <?php if ($hour == "10") {
-                                                        echo "Selected";
-                                                    } ?>>10
-                                <option value="11" <?php if ($hour == "11") {
-                                                        echo "Selected";
-                                                    } ?>>11
-                                <option value="12" <?php if ($hour == "12") {
-                                                        echo "Selected";
-                                                    } ?>>12
-                                <option value="13" <?php if ($hour == "13") {
-                                                        echo "Selected";
-                                                    } ?>>13
-                                <option value="14" <?php if ($hour == "14") {
-                                                        echo "Selected";
-                                                    } ?>>14
-                                <option value="15" <?php if ($hour == "15") {
-                                                        echo "Selected";
-                                                    } ?>>15
-                                <option value="16" <?php if ($hour == "16") {
-                                                        echo "Selected";
-                                                    } ?>>16
-                                <option value="17" <?php if ($hour == "17") {
-                                                        echo "Selected";
-                                                    } ?>>17
-                                <option value="18" <?php if ($hour == "18") {
-                                                        echo "Selected";
-                                                    } ?>>18
-                                <option value="19" <?php if ($hour == "19") {
-                                                        echo "Selected";
-                                                    } ?>>19
-                                <option value="20" <?php if ($hour == "20") {
-                                                        echo "Selected";
-                                                    } ?>>20
-                                <option value="21" <?php if ($hour == "21") {
-                                                        echo "Selected";
-                                                    } ?>>21
-                                <option value="22" <?php if ($hour == "22") {
-                                                        echo "Selected";
-                                                    } ?>>22
-                                <option value="23" <?php if ($hour == "23") {
-                                                        echo "Selected";
-                                                    } ?>>23
-                                </option>
+                                <?php
+                                $hour_opts = array();
+                                for ($h = 0; $h <= 23; $h++) {
+                                    $hour_opts[sprintf("%02d", $h)] = $h;
+                                }
+                                echo render_select_options($hour, $hour_opts);
+                                ?>
                             </select>
                         </p>
                         <hr color=#000000>
@@ -756,119 +292,27 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
                         <p>
                             <u>Snow Ratio:</u>
                             <select name="ratio">
-                                <option value="30" <?php if ($ratio == 30) {
-                                                        echo "Selected";
-                                                    } ?>>30
-                                <option value="29" <?php if ($ratio == 29) {
-                                                        echo "Selected";
-                                                    } ?>>29
-                                <option value="28" <?php if ($ratio == 28) {
-                                                        echo "Selected";
-                                                    } ?>>28
-                                <option value="27" <?php if ($ratio == 27) {
-                                                        echo "Selected";
-                                                    } ?>>27
-                                <option value="26" <?php if ($ratio == 26) {
-                                                        echo "Selected";
-                                                    } ?>>26
-                                <option value="25" <?php if ($ratio == 25) {
-                                                        echo "Selected";
-                                                    } ?>>25
-                                <option value="24" <?php if ($ratio == 24) {
-                                                        echo "Selected";
-                                                    } ?>>24
-                                <option value="23" <?php if ($ratio == 23) {
-                                                        echo "Selected";
-                                                    } ?>>23
-                                <option value="22" <?php if ($ratio == 22) {
-                                                        echo "Selected";
-                                                    } ?>>22
-                                <option value="21" <?php if ($ratio == 21) {
-                                                        echo "Selected";
-                                                    } ?>>21
-                                <option value="20" <?php if ($ratio == 20) {
-                                                        echo "Selected";
-                                                    } ?>>20
-                                <option value="19" <?php if ($ratio == 19) {
-                                                        echo "Selected";
-                                                    } ?>>19
-                                <option value="18" <?php if ($ratio == 18) {
-                                                        echo "Selected";
-                                                    } ?>>18
-                                <option value="17" <?php if ($ratio == 17) {
-                                                        echo "Selected";
-                                                    } ?>>17
-                                <option value="16" <?php if ($ratio == 16) {
-                                                        echo "Selected";
-                                                    } ?>>16
-                                <option value="15" <?php if ($ratio == 15) {
-                                                        echo "Selected";
-                                                    } ?>>15
-                                <option value="14" <?php if ($ratio == 14) {
-                                                        echo "Selected";
-                                                    } ?>>14
-                                <option value="13" <?php if ($ratio == 13) {
-                                                        echo "Selected";
-                                                    } ?>>13
-                                <option value="12" <?php if ($ratio == 12) {
-                                                        echo "Selected";
-                                                    } ?>>12
-                                <option value="11" <?php if ($ratio == 11) {
-                                                        echo "Selected";
-                                                    } ?>>11
-                                <option value="10" <?php if ($ratio == 10) {
-                                                        echo "Selected";
-                                                    } ?>>10
-                                <option value="9" <?php if ($ratio == 9) {
-                                                        echo "Selected";
-                                                    } ?>>9
-                                <option value="8" <?php if ($ratio == 8) {
-                                                        echo "Selected";
-                                                    } ?>>8
-                                <option value="7" <?php if ($ratio == 7) {
-                                                        echo "Selected";
-                                                    } ?>>7
-                                <option value="6" <?php if ($ratio == 6) {
-                                                        echo "Selected";
-                                                    } ?>>6
-                                <option value="5" <?php if ($ratio == 5) {
-                                                        echo "Selected";
-                                                    } ?>>5
-                                <option value="4" <?php if ($ratio == 4) {
-                                                        echo "Selected";
-                                                    } ?>>4
-                                <option value="3" <?php if ($ratio == 3) {
-                                                        echo "Selected";
-                                                    } ?>>3
-                                <option value="2" <?php if ($ratio == 2) {
-                                                        echo "Selected";
-                                                    } ?>>2
-                                <option value="1" <?php if ($ratio == 1) {
-                                                        echo "Selected";
-                                                    } ?>>1
-                                <option value="0" <?php if ($ratio == 0) {
-                                                        echo "Selected";
-                                                    } ?>>NP
-                                </option>
+                                <?php
+                                $ratio_opts = array();
+                                for ($r = 30; $r >= 1; $r--) {
+                                    $ratio_opts[$r] = $r;
+                                }
+                                $ratio_opts[0] = "NP";
+                                echo render_select_options($ratio, $ratio_opts);
+                                ?>
                             </select>
                             :1</font>
                         </p>
 
                         <table border="0" cellspacing="0" cellpadding="0">
                             <tr>
-                                <td width="135"><input type=checkbox name="max_t" <?php if ($max_t_check == 1) {
-                                                                                        echo "checked=\"yes\"";
-                                                                                    } ?>>Max-T in Prof.</input></td>
+                                <td width="135"><input type=checkbox name="max_t" <?php echo checked_attr($max_t_check == 1); ?>>Max-T in Prof.</input></td>
                             </tr>
                             <tr>
-                                <td width="135"><input type=checkbox name="cobb" <?php if ($cobb_check == 1) {
-                                                                                        echo "checked=\"yes\"";
-                                                                                    } ?>>Cobb Method</input></td>
+                                <td width="135"><input type=checkbox name="cobb" <?php echo checked_attr($cobb_check == 1); ?>>Cobb Method</input></td>
                             </tr>
                             <tr>
-                                <td width="135"><input type=checkbox name="compaction" <?php if ($compaction_check == 1) {
-                                                                                            echo "checked=\"yes\"";
-                                                                                        } ?>>Compaction</input></td>
+                                <td width="135"><input type=checkbox name="compaction" <?php echo checked_attr($compaction_check == 1); ?>>Compaction</input></td>
                             </tr>
                         </table>
 
@@ -882,19 +326,13 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
 
                         <table border="0" cellspacing="0" cellpadding="0">
                             <tr>
-                                <td width="135"><input type=checkbox name="mean_mt" <?php if ($mean_mt_check == 1) {
-                                                                                        echo "checked=\"yes\"";
-                                                                                    } ?>>Mean Mom. Transfer</input></td>
+                                <td width="135"><input type=checkbox name="mean_mt" <?php echo checked_attr($mean_mt_check == 1); ?>>Mean Mom. Transfer</input></td>
                             </tr>
                             <tr>
-                                <td width="135"><input type=checkbox name="max_mt" <?php if ($max_mt_check == 1) {
-                                                                                        echo "checked=\"yes\"";
-                                                                                    } ?>>Max Mom. Transfer</input></td>
+                                <td width="135"><input type=checkbox name="max_mt" <?php echo checked_attr($max_mt_check == 1); ?>>Max Mom. Transfer</input></td>
                             </tr>
                             <tr>
-                                <td width="135"><input type=checkbox name="mean" <?php if ($mean_check == 1) {
-                                                                                        echo "checked=\"yes\"";
-                                                                                    } ?>>Mean Wind</input></td>
+                                <td width="135"><input type=checkbox name="mean" <?php echo checked_attr($mean_check == 1); ?>>Mean Wind</input></td>
                             </tr>
                         </table>
 
@@ -1092,122 +530,57 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
     $var7 = "uwnd";
     $var8 = "vwnd";
 
-    for ($z = 0; $z <= 5; $z++) {
-        if ($z == 0) {
-            $mdl = "nam";
-            $nam_var1 = array();
-            $nam_var2 = array();
-            $nam_var3 = array();
-            $nam_var4 = array();
-            $nam_var5 = array();
-            $nam_var6 = array();
-            $nam_date = array();
-            $nam_time = array();
-            $nam_wind_x = array();
-            $nam_wind_y = array();
-            if ($archive_check == 1) {
-                if ($hour >= 0 && $hour <= 11) {
-                    $parse_date = "" . $year . "" . $month . "" . $day . "00";
-                } else {
-                    $parse_date = "" . $year . "" . $month . "" . $day . "12";
-                }
-            }
-        } elseif ($z == 1) {
-            $mdl = "namm";
-            $namm_date = array();
-            $namm_var1 = array();
-            $namm_var2 = array();
-            $namm_var3 = array();
-            $namm_var4 = array();
-            $namm_var5 = array();
-            $namm_var6 = array();
-            $namm_time = array();
-            $namm_wind_x = array();
-            $namm_wind_y = array();
-            if ($archive_check == 1) {
-                if ($hour >= 0 && $hour <= 5) {
-                    $temp_date = strtotime("" . $year . "-" . $month . "-" . $day . " 00:00:00") - 21600;
-                    $parse_date = date("YmdH", $temp_date);
-                } elseif ($hour >= 6 && $hour <= 17) {
-                    $parse_date = "" . $year . "" . $month . "" . $day . "06";
-                } else {
-                    $parse_date = "" . $year . "" . $month . "" . $day . "18";
-                }
-            }
-        } elseif ($z == 2) {
-            $mdl = "gfs";
-            $gfs_date = array();
-            $gfs_var1 = array();
-            $gfs_var2 = array();
-            $gfs_var3 = array();
-            $gfs_var4 = array();
-            $gfs_var5 = array();
-            $gfs_var6 = array();
-            $gfs_time = array();
-            $gfs_wind_x = array();
-            $gfs_wind_y = array();
-            if ($archive_check == 1) {
-                if ($hour >= 0 && $hour <= 11) {
-                    $parse_date = "" . $year . "" . $month . "" . $day . "00";
-                } else {
-                    $parse_date = "" . $year . "" . $month . "" . $day . "12";
-                }
-            }
-        } elseif ($z == 3) {
-            $mdl = "gfsm";
-            $gfsm_date = array();
-            $gfsm_var1 = array();
-            $gfsm_var2 = array();
-            $gfsm_var3 = array();
-            $gfsm_var4 = array();
-            $gfsm_var5 = array();
-            $gfsm_var6 = array();
-            $gfsm_time = array();
-            $gfsm_wind_x = array();
-            $gfsm_wind_y = array();
-            if ($archive_check == 1) {
-                if ($hour >= 0 && $hour <= 5) {
-                    $temp_date = strtotime("" . $year . "-" . $month . "-" . $day . " 00:00:00") - 21600;
-                    $parse_date = date("YmdH", $temp_date);
-                } elseif ($hour >= 6 && $hour <= 17) {
-                    $parse_date = "" . $year . "" . $month . "" . $day . "06";
-                } else {
-                    $parse_date = "" . $year . "" . $month . "" . $day . "18";
-                }
-            }
-        } elseif ($z == 4) {
-            $mdl = "rap";
-            $rap_date = array();
-            $rap_var1 = array();
-            $rap_var2 = array();
-            $rap_var3 = array();
-            $rap_var4 = array();
-            $rap_var5 = array();
-            $rap_var6 = array();
-            $rap_time = array();
-            $rap_wind_x = array();
-            $rap_wind_y = array();
-            $parse_date = "" . $year . "" . $month . "" . $day . "" . $hour . "";;
-        } elseif ($z == 5) {
-            $mdl = "nam4km";
-            $nam4km_var1 = array();
-            $nam4km_var2 = array();
-            $nam4km_var3 = array();
-            $nam4km_var4 = array();
-            $nam4km_var5 = array();
-            $nam4km_var6 = array();
-            $nam4km_date = array();
-            $nam4km_time = array();
-            $nam4km_wind_x = array();
-            $nam4km_wind_y = array();
-            if ($archive_check == 1) {
-                if ($hour >= 0 && $hour <= 11) {
-                    $parse_date = "" . $year . "" . $month . "" . $day . "00";
-                } else {
-                    $parse_date = "" . $year . "" . $month . "" . $day . "12";
-                }
-            }
+    /**
+     * Compute the archive-mode `date=` query param passed to data/parser.php per model
+     *
+     * @param string $mdl The model name (e.g., "nam", "gfs", "rap")
+     * @param int $archive_check Flag indicating if archive mode is active (1 for archive mode)
+     * @param int $year The year component of the date
+     * @param int $month The month component of the date
+     * @param int $day The day component of the date
+     * @param int $hour The hour component of the date
+     * @return string|null The computed parse date string or null if not applicable
+     */
+    function compute_model_parse_date($mdl, $archive_check, $year, $month, $day, $hour)
+    {
+        if ($mdl == "rap") {
+            return "" . $year . "" . $month . "" . $day . "" . $hour . "";
         }
+        if ($archive_check != 1) {
+            return null;
+        }
+        if (in_array($mdl, array("nam", "gfs", "nam4km"))) {
+            if ($hour >= 0 && $hour <= 11) {
+                return "" . $year . "" . $month . "" . $day . "00";
+            }
+            return "" . $year . "" . $month . "" . $day . "12";
+        }
+        // namm, gfsm
+        if ($hour >= 0 && $hour <= 5) {
+            $temp_date = strtotime("" . $year . "-" . $month . "-" . $day . " 00:00:00") - 21600;
+            return date("YmdH", $temp_date);
+        } elseif ($hour >= 6 && $hour <= 17) {
+            return "" . $year . "" . $month . "" . $day . "06";
+        }
+        return "" . $year . "" . $month . "" . $day . "18";
+    }
+
+    $model_prefixes = array("nam", "namm", "gfs", "gfsm", "rap", "nam4km");
+    foreach ($model_prefixes as $mdl) {
+        $var1_out = array();
+        $var2_out = array();
+        $var3_out = array();
+        $var4_out = array();
+        $var5_out = array();
+        $var6_out = array();
+        $date_out = array();
+        $time_out = array();
+        $wind_x_out = array();
+        $wind_y_out = array();
+        $init_out = null;
+        $init_date_out = null;
+
+        $parse_date = compute_model_parse_date($mdl, $archive_check, $year, $month, $day, $hour);
         if ($archive_check != 1) {
             $link = ROOTURL . "data/parser.php?model=" . $mdl . "&site=" . $site_l . "";
         } else {
@@ -1215,9 +588,7 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
         }
         $data = file_get_contents($link);
         $z2 = 0;
-        if ($data === False) {
-            continue;
-        } else {
+        if ($data !== False) {
             foreach (explode("\n", $data) as $line) {
                 $d = explode("\t", trim($line));
                 $z2++;
@@ -1262,130 +633,64 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
                     } else {
                         continue;
                     }
-                } elseif ($z == 0) {
+                } else {
                     $mod_time = strtotime($d[1]);
-                    $nam_var1[] = "" . round($d[$index1], 2) . " in.";
-                    $nam_var2[] = "" . round($d[$index2], 2) . " in.";
-                    $nam_var3[] = "" . round($d[$index3], 0) . " F";
-                    $nam_var4[] = "" . round($d[$index4], 0) . " F";
-                    $nam_var5[] = "" . round($d[$index5], 0) . " mph";
-                    $nam_var6[] = get_wind_dir($d[$index6]);
-                    $nam_time[] = $mod_time;
-                    $nam_date[] = date("m/d @ H\z", $mod_time);
-                    $nam_wind_x[] = $d[$index7];
-                    $nam_wind_y[] = $d[$index8];
+                    $var1_out[] = "" . round($d[$index1], 2) . " in.";
+                    $var2_out[] = "" . round($d[$index2], 2) . " in.";
+                    $var3_out[] = "" . round($d[$index3], 0) . " F";
+                    $var4_out[] = "" . round($d[$index4], 0) . " F";
+                    $var5_out[] = "" . round($d[$index5], 0) . " mph";
+                    $var6_out[] = get_wind_dir($d[$index6]);
+                    $time_out[] = $mod_time;
+                    $date_out[] = date("m/d @ H\z", $mod_time);
+                    $wind_x_out[] = $d[$index7];
+                    $wind_y_out[] = $d[$index8];
                     if ($z2 == 2) {
-                        $nam_init = date("H", $mod_time);
-                    }
-                } elseif ($z == 1) {
-                    $mod_time = strtotime($d[1]);
-                    $namm_var1[] = "" . round($d[$index1], 2) . " in.";
-                    $namm_var2[] = "" . round($d[$index2], 2) . " in.";
-                    $namm_var3[] = "" . round($d[$index3], 0) . " F";
-                    $namm_var4[] = "" . round($d[$index4], 0) . " F";
-                    $namm_var5[] = "" . round($d[$index5], 0) . " mph";
-                    $namm_var6[] = get_wind_dir($d[$index6]);
-                    $namm_time[] = $mod_time;
-                    $namm_date[] = date("m/d @ H\z", $mod_time);
-                    $namm_wind_x[] = $d[$index7];
-                    $namm_wind_y[] = $d[$index8];
-                    if ($z2 == 2) {
-                        $namm_init = date("H", $mod_time);
-                    }
-                } elseif ($z == 2) {
-                    $mod_time = strtotime($d[1]);
-                    $gfs_var1[] = "" . round($d[$index1], 2) . " in.";
-                    $gfs_var2[] = "" . round($d[$index2], 2) . " in.";
-                    $gfs_var3[] = "" . round($d[$index3], 0) . " F";
-                    $gfs_var4[] = "" . round($d[$index4], 0) . " F";
-                    $gfs_var5[] = "" . round($d[$index5], 0) . " mph";
-                    $gfs_var6[] = get_wind_dir($d[$index6]);
-                    $gfs_time[] = $mod_time;
-                    $gfs_date[] = date("m/d @ H\z", $mod_time);
-                    $gfs_wind_x[] = $d[$index7];
-                    $gfs_wind_y[] = $d[$index8];
-                    if ($z2 == 2) {
-                        $gfs_init = date("H", $mod_time);
-                        $gfs_init_date    = date("YmdH", $mod_time);
-                    }
-                } elseif ($z == 3) {
-                    $mod_time = strtotime($d[1]);
-                    $gfsm_var1[] = "" . round($d[$index1], 2) . " in.";
-                    $gfsm_var2[] = "" . round($d[$index2], 2) . " in.";
-                    $gfsm_var3[] = "" . round($d[$index3], 0) . " F";
-                    $gfsm_var4[] = "" . round($d[$index4], 0) . " F";
-                    $gfsm_var5[] = "" . round($d[$index5], 0) . " mph";
-                    $gfsm_var6[] = get_wind_dir($d[$index6]);
-                    $gfsm_time[] = $mod_time;
-                    $gfsm_date[] = date("m/d @ H\z", $mod_time);
-                    $gfsm_wind_x[] = $d[$index7];
-                    $gfsm_wind_y[] = $d[$index8];
-                    if ($z2 == 2) {
-                        $gfsm_init = date("H", $mod_time);
-                        $gfsm_init_date = date("YmdH", $mod_time);
-                    }
-                } elseif ($z == 4) {
-                    $mod_time = strtotime($d[1]);
-                    $rap_var1[] = "" . round($d[$index1], 2) . " in.";
-                    $rap_var2[] = "" . round($d[$index2], 2) . " in.";
-                    $rap_var3[] = "" . round($d[$index3], 0) . " F";
-                    $rap_var4[] = "" . round($d[$index4], 0) . " F";
-                    $rap_var5[] = "" . round($d[$index5], 0) . " mph";
-                    $rap_var6[] = get_wind_dir($d[$index6]);
-                    $rap_time[] = $mod_time;
-                    $rap_date[] = date("m/d @ H\z", $mod_time);
-                    $rap_wind_x[] = $d[$index7];
-                    $rap_wind_y[] = $d[$index8];
-                    if ($z2 == 2) {
-                        $rap_init = date("H", $mod_time);
-                    }
-                } elseif ($z == 5) {
-                    $mod_time = strtotime($d[1]);
-                    $nam4km_var1[] = "" . round($d[$index1], 2) . " in.";
-                    $nam4km_var2[] = "" . round($d[$index2], 2) . " in.";
-                    $nam4km_var3[] = "" . round($d[$index3], 0) . " F";
-                    $nam4km_var4[] = "" . round($d[$index4], 0) . " F";
-                    $nam4km_var5[] = "" . round($d[$index5], 0) . " mph";
-                    $nam4km_var6[] = get_wind_dir($d[$index6]);
-                    $nam4km_time[] = $mod_time;
-                    $nam4km_date[] = date("m/d @ H\z", $mod_time);
-                    $nam4km_wind_x[] = $d[$index7];
-                    $nam4km_wind_y[] = $d[$index8];
-                    if ($z2 == 2) {
-                        $nam4km_init = date("H", $mod_time - 3600);
+                        $init_out = ($mdl == "nam4km") ? date("H", $mod_time - 3600) : date("H", $mod_time);
+                        if ($mdl == "gfs" || $mdl == "gfsm") {
+                            $init_date_out = date("YmdH", $mod_time);
+                        }
                     }
                 }
             }
         }
+
+        ${$mdl . "_var1"} = $var1_out;
+        ${$mdl . "_var2"} = $var2_out;
+        ${$mdl . "_var3"} = $var3_out;
+        ${$mdl . "_var4"} = $var4_out;
+        ${$mdl . "_var5"} = $var5_out;
+        ${$mdl . "_var6"} = $var6_out;
+        ${$mdl . "_date"} = $date_out;
+        ${$mdl . "_time"} = $time_out;
+        ${$mdl . "_wind_x"} = $wind_x_out;
+        ${$mdl . "_wind_y"} = $wind_y_out;
+        ${$mdl . "_init"} = $init_out;
+        if ($init_date_out !== null) {
+            ${$mdl . "_init_date"} = $init_date_out;
+        }
     }
 
-    //print_r($gfs_time);
-    //die();
-
-    if (!empty($gfs_time) && !empty($gfsm_time)) {
-        $min = min($gfs_time[0], $gfsm_time[0]);
-        $max = max($gfs_time[count($gfs_time) - 1], @$gfsm_time[count($gfsm_time) - 1]);
+    // Determine the overall min/max forecast time across whichever models returned data,
+    // instead of relying solely on gfs/gfsm (which could both be empty and left $min/$max unset).
+    $time_bounds = array();
+    foreach (array($gfs_time, $gfsm_time, $nam_time, $namm_time, $rap_time, $nam4km_time) as $t) {
+        if (!empty($t)) {
+            $time_bounds[] = array($t[0], $t[count($t) - 1]);
+        }
+    }
+    if (!empty($time_bounds)) {
+        $min = min(array_column($time_bounds, 0));
+        $max = max(array_column($time_bounds, 1));
     } else {
-        $link = ROOTURL . "data/parser.php?model=gfs&site=kdsm&date=" . $gfs_init_date . "";
-        $data = file_get_contents($link);
-        foreach (explode("\n", $data) as $line) {
-            $d = explode("\t", trim($line));
-            $buf_t_gfs[] = strtotime($d[1]);
-        }
-        $link = ROOTURL . "data/parser.php?model=gfsm&site=kdsm&date=" . $gfsm_init_date . "";
-        $data = file_get_contents($link);
-        foreach (explode("\n", $data) as $line) {
-            $d = explode("\t", trim($line));
-            $buf_t_gfsm[] = strtotime($d[1]);
-        }
-        $min = min($buf_t_gfs[1], $buf_t_gfsm[1]);
-        $max = max($buf_t_gfs[count($buf_t_gfs) - 1], $buf_t_gfsm[count($buf_t_gfsm) - 1]);
+        $min = time();
+        $max = time();
     }
     $diff = ($max - $min) / 3600;
     if ($archive_check == 1) {
-        $link = "http://mesonet.agron.iastate.edu/request/asos/csv.php?lat=" . $lat . "&lon=" . $lon . "&date=" . date("Y-m-d", $min) . "";
+        $link = "https://mesonet.agron.iastate.edu/request/asos/csv.php?lat=" . $lat . "&lon=" . $lon . "&date=" . date("Y-m-d", $min) . "";
     } else {
-        $link = "http://mesonet.agron.iastate.edu/request/asos/csv.php?lat=" . $lat . "&lon=" . $lon . "";
+        $link = "https://mesonet.agron.iastate.edu/request/asos/csv.php?lat=" . $lat . "&lon=" . $lon . "";
     }
     $obs_time = array();
     $obs_temp = array();
@@ -1666,160 +971,84 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
         }
     }
 
+    /**
+     * Compute the "apparent temperature" used for MOS output, considering wind chill and heat index effects.
+     *
+     * @param float $tempF The air temperature in degrees Fahrenheit
+     * @param float $dptF The dew point temperature in degrees Fahrenheit
+     * @param float $rawWind The wind speed in mph
+     * @return float The computed apparent temperature in degrees Fahrenheit
+     */
+    function mos_hiwc($tempF, $dptF, $rawWind)
+    {
+        $tempC = ($tempF - 32) * (5 / 9);
+        $dptC = ($dptF - 32) * (5 / 9);
+        $rh = 100 * (exp(((1 / ($dptC + 273.15)) - (1 / ($tempC + 273.15))) / (-461.495 / 2500000)));
+        if ($tempF >= 80 && $dptC >= 12) {
+            return -42.379 + (2.04901523 * $tempF) + (10.14333127 * $rh) + (-0.22475541 * $tempF * $rh) + (-0.00683783 * $tempF * $tempF) + (-0.05481717 * $rh * $rh) + (0.00122874 * $tempF * $tempF * $rh) + (0.00085282 * $tempF * $rh * $rh) + (-0.00000199 * $tempF * $tempF * $rh * $rh);
+        } elseif ($tempF > 50 || $rawWind == 0) {
+            return $tempF;
+        }
+        return 35.74 + (0.6215 * $tempF) - (35.75 * pow($rawWind, 0.16)) + ((0.4275 * $tempF) * pow($rawWind, 0.16));
+    }
+
     //start of MOS fetching
     // MOS data
-    for ($z = 0; $z <= 2; $z++) {
-        if ($z == 0) {
-            $mos_year = @date('Y', $nam_time[0]);
-            $mos_mon = @date('m', $nam_time[0]);
-            $mos_day = @date('d', $nam_time[0]);
-            $mos_h = @date('H', $nam_time[0]);
-            $nam_mos_temp = array();
-            $nam_mos_dew = array();
-            $nam_mos_wspd = array();
-            $nam_mos_wdir = array();
-            $nam_mos_precip = array();
-            $nam_mos_temp = array();
-            $nam_mos_snow = array();
-            $nam_mos_snow_accum = array();
-            $nam_mos_time = array();
-            $nam_mos_hiwc = array();
-            $nam_mos_wind_x = array();
-            $nam_mos_wind_y = array();
-            $nam_mos_wind_dir = array();
-            $nam_mos_date = array();
-            $mos_time = "" . $mos_year . "-" . $mos_mon . "-" . $mos_day . "%20" . $mos_h . ":00";
-            $link = "http://mesonet.agron.iastate.edu/mos/csv.php?station=" . $ob_station . "&runtime=" . $mos_time . "&model=NAM";
-        } elseif ($z == 1) {
-            $mos_year = @date('Y', $gfs_time[0]);
-            $mos_mon = @date('m', $gfs_time[0]);
-            $mos_day = @date('d', $gfs_time[0]);
-            $mos_h = @date('H', $gfs_time[0]);
-            $gfs_mos_temp = array();
-            $gfs_mos_dew = array();
-            $gfs_mos_wspd = array();
-            $gfs_mos_wdir = array();
-            $gfs_mos_precip = array();
-            $gfs_mos_temp = array();
-            $gfs_mos_snow = array();
-            $gfs_mos_snow_accum = array();
-            $gfs_mos_time = array();
-            $gfs_mos_hiwc = array();
-            $gfs_mos_wind_x = array();
-            $gfs_mos_wind_y = array();
-            $gfs_mos_wind_dir = array();
-            $gfs_mos_date = array();
-            $mos_time = "" . $mos_year . "-" . $mos_mon . "-" . $mos_day . "%20" . $mos_h . ":00";
-            $link = "http://mesonet.agron.iastate.edu/mos/csv.php?station=" . $ob_station . "&runtime=" . $mos_time . "&model=GFS";
-        } elseif ($z == 2) {
-            $mos_year = @date('Y', $gfsm_time[0]);
-            $mos_mon = @date('m', $gfsm_time[0]);
-            $mos_day = @date('d', $gfsm_time[0]);
-            $mos_h = @date('H', $gfsm_time[0]);
-            $gfsm_mos_temp = array();
-            $gfsm_mos_dew = array();
-            $gfsm_mos_wspd = array();
-            $gfsm_mos_wdir = array();
-            $gfsm_mos_precip = array();
-            $gfsm_mos_temp = array();
-            $gfsm_mos_snow = array();
-            $gfsm_mos_snow_accum = array();
-            $gfsm_mos_time = array();
-            $gfsm_mos_hiwc = array();
-            $gfsm_mos_wind_x = array();
-            $gfsm_mos_wind_y = array();
-            $gfsm_mos_wind_dir = array();
-            $gfsm_mos_date = array();
-            $mos_time = "" . $mos_year . "-" . $mos_mon . "-" . $mos_day . "%20" . $mos_h . ":00";
-            $link = "http://mesonet.agron.iastate.edu/mos/csv.php?station=" . $ob_station . "&runtime=" . $mos_time . "&model=GFS";
-        }
+    $mos_models = array(
+        array("prefix" => "nam_mos", "time_src" => $nam_time, "query_model" => "NAM"),
+        array("prefix" => "gfs_mos", "time_src" => $gfs_time, "query_model" => "GFS"),
+        array("prefix" => "gfsm_mos", "time_src" => $gfsm_time, "query_model" => "GFS"),
+    );
+    foreach ($mos_models as $mos) {
+        $prefix = $mos["prefix"];
+        $time_src = $mos["time_src"];
+        $mos_year = @date('Y', $time_src[0]);
+        $mos_mon = @date('m', $time_src[0]);
+        $mos_day = @date('d', $time_src[0]);
+        $mos_h = @date('H', $time_src[0]);
+        ${$prefix . "_temp"} = array();
+        ${$prefix . "_dew"} = array();
+        ${$prefix . "_wspd"} = array();
+        ${$prefix . "_wdir"} = array();
+        ${$prefix . "_precip"} = array();
+        ${$prefix . "_snow"} = array();
+        ${$prefix . "_snow_accum"} = array();
+        ${$prefix . "_time"} = array();
+        ${$prefix . "_hiwc"} = array();
+        ${$prefix . "_wind_x"} = array();
+        ${$prefix . "_wind_y"} = array();
+        ${$prefix . "_wind_dir"} = array();
+        ${$prefix . "_date"} = array();
+        ${$prefix . "_qpf"} = array();
+        ${$prefix . "_qpf_accum"} = array();
+        $mos_time = "" . $mos_year . "-" . $mos_mon . "-" . $mos_day . "%20" . $mos_h . ":00";
+        $link = "https://mesonet.agron.iastate.edu/mos/csv.php?station=" . $ob_station . "&runtime=" . $mos_time . "&model=" . $mos["query_model"];
+
+        $mos_check = ${$prefix . "_check"};
         $k = -1;
         $data = file($link);
         foreach ($data as $line) {
             $k++;
             $d = explode(",", trim($line));
-            if ($k >= 1) {
-                if ($z == 0 && $nam_mos_check == 1) {
-                    $nam_mos_time[] = strtotime($d[3]);
-                    $nam_mos_date[] = date("m/d @ H\z", strtotime($d[3]));
-                    $nam_mos_temp[] = "" . $d[5] . " F";
-                    $nam_mos_dew[] = "" . $d[6] . " F";
-                    $nam_mos_wdir[] = $d[8];
-                    $nam_mos_wspd[] = "" . round($d[9] * 1.15077945, 0) . " mph";
-                    $nam_mos_snow[] = $d[16];
-                    $nam_mos_qpf[] = $d[12];
-                    $nam_mos_wind_x[] = cos(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
-                    $nam_mos_wind_y[] = sin(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
-                    $nam_mos_wind_dir[] = get_wind_dir($d[8]);
-                    $nam_mos_snow_accum[] = array_sum($nam_mos_snow);
-                    $nam_mos_qpf_accum[] = array_sum($nam_mos_qpf);
-                    $temp_c = ($d[5] - 32) * (5 / 9);
-                    $dpt_c = ($d[6] - 32) * (5 / 9);
-                    $rh = 100 * (exp(((1 / ($dpt_c + 273.15)) - (1 / ($temp_c + 273.15))) / (-461.495 / 2500000)));
-                    if ($d[5] >= 80 && $dpt_c >= 12) {
-                        $nam_mos_hiwc[] = -42.379 + (2.04901523 * $d[5]) + (10.14333127 * $rh) + (-0.22475541 * $d[5] * $rh) + (-0.00683783 * $d[5] * $d[5]) + (-0.05481717 * $rh * $rh) + (0.00122874 * $d[5] * $d[5] * $rh) + (0.00085282 * $d[5] * $rh * $rh) + (-0.00000199 * $d[5] * $d[5] * $rh * $rh);
-                    } elseif ($d[5] > 50 || $d[9] == 0) {
-                        $nam_mos_hiwc[] = $d[5];
-                    } else {
-                        $nam_mos_hiwc[] = 35.74 + (0.6215 * $d[5]) - (35.75 * pow($d[9], 0.16)) + ((0.4275 * $d[5]) * pow($d[9], 0.16));
-                    }
-                } elseif ($z == 1 && $gfs_mos_check == 1) {
-                    $gfs_mos_time[] = strtotime($d[3]);
-                    $gfs_mos_date[] = date("m/d @ H\z", strtotime($d[3]));
-                    $gfs_mos_temp[] = "" . $d[5] . " F";
-                    $gfs_mos_dew[] = "" . $d[6] . " F";
-                    $gfs_mos_wdir[] = $d[8];
-                    $gfs_mos_wspd[] = "" . round($d[9] * 1.15077945, 0) . " mph";
-                    $gfs_mos_snow[] = $d[16];
-                    $gfs_mos_qpf[] = $d[12];
-                    $gfs_mos_wind_x[] = cos(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
-                    $gfs_mos_wind_y[] = sin(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
-                    $gfs_mos_wind_dir[] = get_wind_dir($d[8]);
-                    $gfs_mos_snow_accum[] = array_sum($gfs_mos_snow);
-                    $gfs_mos_qpf_accum[] = array_sum($gfs_mos_qpf);
-                    $temp_c = ($d[5] - 32) * (5 / 9);
-                    $dpt_c = ($d[6] - 32) * (5 / 9);
-                    $rh = 100 * (exp(((1 / ($dpt_c + 273.15)) - (1 / ($temp_c + 273.15))) / (-461.495 / 2500000)));
-                    if ($d[5] >= 80 && $dpt_c >= 12) {
-                        $gfs_mos_hiwc[] = -42.379 + (2.04901523 * $d[5]) + (10.14333127 * $rh) + (-0.22475541 * $d[5] * $rh) + (-0.00683783 * $d[5] * $d[5]) + (-0.05481717 * $rh * $rh) + (0.00122874 * $d[5] * $d[5] * $rh) + (0.00085282 * $d[5] * $rh * $rh) + (-0.00000199 * $d[5] * $d[5] * $rh * $rh);
-                    } elseif ($d[5] > 50 || $d[9] == 0) {
-                        $gfs_mos_hiwc[] = $d[5];
-                    } else {
-                        $gfs_mos_hiwc[] = 35.74 + (0.6215 * $d[5]) - (35.75 * pow($d[9], 0.16)) + ((0.4275 * $d[5]) * pow($d[9], 0.16));
-                    }
-                } elseif ($z == 2 && $gfsm_mos_check == 1) {
-                    $gfsm_mos_time[] = strtotime($d[3]);
-                    $gfsm_mos_date[] = date("m/d @ H\z", strtotime($d[3]));
-                    $gfsm_mos_temp[] = "" . $d[5] . " F";
-                    $gfsm_mos_dew[] = "" . $d[6] . " F";
-                    $gfsm_mos_wdir[] = $d[8];
-                    $gfsm_mos_wspd[] = "" . round($d[9] * 1.15077945, 0) . " mph";
-                    $gfsm_mos_snow[] = $d[16];
-                    $gfsm_mos_qpf[] = $d[12];
-                    $gfsm_mos_wind_x[] = cos(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
-                    $gfsm_mos_wind_y[] = sin(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
-                    $gfsm_mos_wind_dir[] = get_wind_dir($d[8]);
-                    $gfsm_mos_snow_accum[] = array_sum($gfsm_mos_snow);
-                    $gfsm_mos_qpf_accum[] = array_sum($gfsm_mos_qpf);
-                    $temp_c = ($d[5] - 32) * (5 / 9);
-                    $dpt_c = ($d[6] - 32) * (5 / 9);
-                    $rh = 100 * (exp(((1 / ($dpt_c + 273.15)) - (1 / ($temp_c + 273.15))) / (-461.495 / 2500000)));
-                    if ($d[5] >= 80 && $dpt_c >= 12) {
-                        $gfsm_mos_hiwc[] = -42.379 + (2.04901523 * $d[5]) + (10.14333127 * $rh) + (-0.22475541 * $d[5] * $rh) + (-0.00683783 * $d[5] * $d[5]) + (-0.05481717 * $rh * $rh) + (0.00122874 * $d[5] * $d[5] * $rh) + (0.00085282 * $d[5] * $rh * $rh) + (-0.00000199 * $d[5] * $d[5] * $rh * $rh);
-                    } elseif ($d[5] > 50 || $d[9] == 0) {
-                        $gfsm_mos_hiwc[] = $d[5];
-                    } else {
-                        $gfsm_mos_hiwc[] = 35.74 + (0.6215 * $d[5]) - (35.75 * pow($d[9], 0.16)) + ((0.4275 * $d[5]) * pow($d[9], 0.16));
-                    }
-                }
+            if ($k >= 1 && $mos_check == 1) {
+                ${$prefix . "_time"}[] = strtotime($d[3]);
+                ${$prefix . "_date"}[] = date("m/d @ H\z", strtotime($d[3]));
+                ${$prefix . "_temp"}[] = "" . $d[5] . " F";
+                ${$prefix . "_dew"}[] = "" . $d[6] . " F";
+                ${$prefix . "_wdir"}[] = $d[8];
+                ${$prefix . "_wspd"}[] = "" . round($d[9] * 1.15077945, 0) . " mph";
+                ${$prefix . "_snow"}[] = $d[16];
+                ${$prefix . "_qpf"}[] = $d[12];
+                ${$prefix . "_wind_x"}[] = cos(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
+                ${$prefix . "_wind_y"}[] = sin(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
+                ${$prefix . "_wind_dir"}[] = get_wind_dir($d[8]);
+                ${$prefix . "_snow_accum"}[] = array_sum(${$prefix . "_snow"});
+                ${$prefix . "_qpf_accum"}[] = array_sum(${$prefix . "_qpf"});
+                ${$prefix . "_hiwc"}[] = mos_hiwc($d[5], $d[6], $d[9]);
             }
         }
     }
 
-    //echo "".$link."\n";
-    //print_r($gfs_mos_date);
-    //print_r($gfs_mos_temp);
-    //die();
 
     //3-hourly model consensus
     $con_temp = array();
@@ -1960,8 +1189,6 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
         }
     }
 
-    //print_r($consensus_t);
-    //die();
     ?>
 
 
@@ -1969,103 +1196,96 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
         <form>
 
             <?php
+            /**
+             * Render the HTML table cells for a single data source's row in the legend.
+             *
+             * @param string $label The label for the data source (e.g., "NAM", "GFS")
+             * @param string|null $date The date string for the row, or null if not applicable
+             * @param array $cols The array of column values to display
+             * @param int $width The width of each table cell (default: 83)
+             * @param bool $bold Whether to render the text in bold (default: false)
+             * @return array An array of HTML table cell strings
+             */
+            function render_source_cells($label, $date, $cols, $width = 83, $bold = false)
+            {
+                $colors = array("0000FF", "000099", "CC0000", "006600", "000000", "000000");
+                $b1 = $bold ? "<b>" : "";
+                $b2 = $bold ? "</b>" : "";
+                $cells = array("<td width=$width align=center><font color=000000>" . $b1 . $label . $b2 . "</font></td>");
+                if ($date === null) {
+                    for ($c = 0; $c < 7; $c++) {
+                        $cells[] = "<td width=$width align=center></td>";
+                    }
+                    return $cells;
+                }
+                $cells[] = "<td width=$width align=center><font color=000000>" . $b1 . $date . $b2 . "</font></td>";
+                foreach ($cols as $c => $val) {
+                    $cells[] = "<td width=$width align=center><font color=" . $colors[$c] . ">" . $b1 . $val . $b2 . "</font></td>";
+                }
+                return $cells;
+            }
 
-            $string_nam1 = "";
-            $string_nam2 = "";
-            $string_nam3 = "";
-            $string_nam4 = "";
-            $string_nam5 = "";
-            $string_nam6 = "";
-            $string_nam7 = "";
-            $string_nam8 = "";
-            $string_namm1 = "";
-            $string_namm2 = "";
-            $string_namm3 = "";
-            $string_namm4 = "";
-            $string_namm5 = "";
-            $string_namm6 = "";
-            $string_namm7 = "";
-            $string_namm8 = "";
-            $string_gfs1 = "";
-            $string_gfs2 = "";
-            $string_gfs3 = "";
-            $string_gfs4 = "";
-            $string_gfs5 = "";
-            $string_gfs6 = "";
-            $string_gfs7 = "";
-            $string_gfs8 = "";
-            $string_gfsm1 = "";
-            $string_gfsm2 = "";
-            $string_gfsm3 = "";
-            $string_gfsm4 = "";
-            $string_gfsm5 = "";
-            $string_gfsm6 = "";
-            $string_gfsm7 = "";
-            $string_gfsm8 = "";
-            $string_rap1 = "";
-            $string_rap2 = "";
-            $string_rap3 = "";
-            $string_rap4 = "";
-            $string_rap5 = "";
-            $string_rap6 = "";
-            $string_rap7 = "";
-            $string_rap8 = "";
-            $string_nam4km1 = "";
-            $string_nam4km2 = "";
-            $string_nam4km3 = "";
-            $string_nam4km4 = "";
-            $string_nam4km5 = "";
-            $string_nam4km6 = "";
-            $string_nam4km7 = "";
-            $string_nam4km8 = "";
-            $string_nam_mos1 = "";
-            $string_nam_mos2 = "";
-            $string_nam_mos3 = "";
-            $string_nam_mos4 = "";
-            $string_nam_mos5 = "";
-            $string_nam_mos6 = "";
-            $string_nam_mos7 = "";
-            $string_nam_mos8 = "";
-            $string_gfs_mos1 = "";
-            $string_gfs_mos2 = "";
-            $string_gfs_mos3 = "";
-            $string_gfs_mos4 = "";
-            $string_gfs_mos5 = "";
-            $string_gfs_mos6 = "";
-            $string_gfs_mos7 = "";
-            $string_gfs_mos8 = "";
-            $string_gfsm_mos1 = "";
-            $string_gfsm_mos2 = "";
-            $string_gfsm_mos3 = "";
-            $string_gfsm_mos4 = "";
-            $string_gfsm_mos5 = "";
-            $string_gfsm_mos6 = "";
-            $string_gfsm_mos7 = "";
-            $string_gfsm_mos8 = "";
-            $string_con1 = "";
-            $string_con2 = "";
-            $string_con3 = "";
-            $string_con4 = "";
-            $string_con5 = "";
-            $string_con6 = "";
-            $string_con7 = "";
-            $string_con8 = "";
-            $string_nws1 = "";
-            $string_nws2 = "";
-            $string_nws3 = "";
-            $string_nws4 = "";
-            $string_nws5 = "";
-            $string_nws6 = "";
-            $string_nws7 = "";
-            $string_nws8 = "";
-            $string_obs1 = "";
-            $string_obs2 = "";
-            $string_obs3 = "";
-            $string_obs4 = "";
-            $string_obs5 = "";
-            $string_obs6 = "";
-            $string_obs7 = "";
-            $string_obs8 = "";
+            /**
+             * Append a unit string to each value in an array.
+             *
+             * @param array $values The array of values to which the unit should be appended
+             * @param string $unit The unit string to append
+             * @return array The array of values with the unit appended
+             */
+            function append_unit($values, $unit)
+            {
+                $out = array();
+                foreach ($values as $v) {
+                    $out[] = $v . $unit;
+                }
+                return $out;
+            }
+
+            $dashes = function ($count) {
+                return array_fill(0, $count, "-");
+            };
+
+            // One entry per legend row-source, in the exact order columns are rendered
+            $sources = array(
+                "nam" => array("check" => $nam_check, "times" => $nam_time, "label" => $nam_init . "z NAM",
+                    "dates" => $nam_date, "cols" => array($nam_var1, $nam_var2, $nam_var3, $nam_var4, $nam_var5, $nam_var6)),
+                "namm" => array("check" => $namm_check, "times" => $namm_time, "label" => $namm_init . "z NAM",
+                    "dates" => $namm_date, "cols" => array($namm_var1, $namm_var2, $namm_var3, $namm_var4, $namm_var5, $namm_var6)),
+                "nam4km" => array("check" => $nam4km_check, "times" => $nam4km_time, "label" => $nam4km_init . "z NAM 4km",
+                    "dates" => $nam4km_date, "cols" => array($nam4km_var1, $nam4km_var2, $nam4km_var3, $nam4km_var4, $nam4km_var5, $nam4km_var6)),
+                "gfs" => array("check" => $gfs_check, "times" => $gfs_time, "label" => $gfs_init . "z GFS",
+                    "dates" => $gfs_date, "cols" => array($gfs_var1, $gfs_var2, $gfs_var3, $gfs_var4, $gfs_var5, $gfs_var6)),
+                "gfsm" => array("check" => $gfsm_check, "times" => $gfsm_time, "label" => $gfsm_init . "z GFS",
+                    "dates" => $gfsm_date, "cols" => array($gfsm_var1, $gfsm_var2, $gfsm_var3, $gfsm_var4, $gfsm_var5, $gfsm_var6)),
+                "rap" => array("check" => $rap_check, "times" => $rap_time,
+                    "label" => $rap_init . ($date >= 2012050100 ? "z RAP" : "z RUC"),
+                    "dates" => $rap_date, "cols" => array($rap_var1, $rap_var2, $rap_var3, $rap_var4, $rap_var5, $rap_var6)),
+                "nam_mos" => array("check" => $nam_mos_check, "times" => $nam_mos_time, "label" => $nam_init . "z NAM MOS",
+                    "dates" => $nam_mos_date, "cols" => array($dashes(count($nam_mos_time)), $dashes(count($nam_mos_time)), $nam_mos_temp, $nam_mos_dew, $nam_mos_wspd, $nam_mos_wind_dir)),
+                "gfs_mos" => array("check" => $gfs_mos_check, "times" => $gfs_mos_time, "label" => $gfs_init . "z GFS MOS",
+                    "dates" => $gfs_mos_date, "cols" => array($dashes(count($gfs_mos_time)), $dashes(count($gfs_mos_time)), $gfs_mos_temp, $gfs_mos_dew, $gfs_mos_wspd, $gfs_mos_wind_dir)),
+                "gfsm_mos" => array("check" => $gfsm_mos_check, "times" => $gfsm_mos_time, "label" => $gfsm_init . "z GFS MOS",
+                    "dates" => $gfsm_mos_date, "cols" => array($dashes(count($gfsm_mos_time)), $dashes(count($gfsm_mos_time)), $gfsm_mos_temp, $gfsm_mos_dew, $gfsm_mos_wspd, $gfsm_mos_wind_dir)),
+                "con" => array("check" => $con_check, "times" => $consensus_t, "label" => "Model Average", "bold" => true, "width" => 90,
+                    "dates" => $con_date, "cols" => array(
+                        append_unit($con_p, " in."), append_unit($con_pa, " in."), append_unit($con_temp, " F"),
+                        append_unit($con_dew, " F"), append_unit($con_ws, " mph"), $con_wd,
+                    )),
+                "nws" => array("check" => $nws_check, "times" => $nws_time_1, "label" => "NWS",
+                    "dates" => $nws_date, "cols" => array($nws_precip, $nws_sum, $nws_temp, $nws_dpt, $nws_wind_spd, $nws_wind_dir)),
+                "obs" => array("check" => $obs_check, "times" => $obs_time, "label" => "OBS - " . $ob_station,
+                    "dates" => $obs_date, "cols" => array($obs_precip, $obs_precip_accum, $obs_temp, $obs_dew, $obs_wspd, $obs_wdir)),
+            );
+
+            $row_titles = array(
+                "<u>Model:</u>", "<u>Day/Time:</u>", "<u>QPF:</u>", "<u>Total QPF:</u>",
+                "<u>2m Temp:</u>", "<u>2m Dewp:</u>", "<u>10m W-Spd:</u>", "<u>10m W-Dir:</u>",
+            );
+
+            $cell_state = array();
+            foreach ($sources as $key => $src) {
+                $cell_state[$key] = array_fill(0, 8, "");
+            }
 
             $ul = 61;
             $ur = 41;
@@ -2075,309 +1295,49 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
             $lr1 = $lr;
 
             $model_count = ($max - $min) / 3600;
-            $index = "";
-            //echo "".$min.",".$max.",".$diff."\n";
-            //die();
-
             for ($i = $min; $i <= $max; $i = $i + 3600) {
-                if ($nam_check == 1) {
-                    if (in_array($i, $nam_time)) {
-                        $index = array_search($i, $nam_time);
-                        $string_nam1 = "<td width=83 align=center><font color=000000>" . $nam_init . "z NAM</font></td>";
-                        $string_nam2 = "<td width=83 align=center><font color=000000>" . $nam_date[$index] . "</font></td>";
-                        $string_nam3 = "<td width=83 align=center><font color=0000FF>" . $nam_var1[$index] . "</font></td>";
-                        $string_nam4 = "<td width=83 align=center><font color=000099>" . $nam_var2[$index] . "</font></td>";
-                        $string_nam5 = "<td width=83 align=center><font color=CC0000>" . $nam_var3[$index] . "</font></td>";
-                        $string_nam6 = "<td width=83 align=center><font color=006600>" . $nam_var4[$index] . "</font></td>";
-                        $string_nam7 = "<td width=83 align=center><font color=000000>" . $nam_var5[$index] . "</font></td>";
-                        $string_nam8 = "<td width=83 align=center><font color=000000>" . $nam_var6[$index] . "</font></td>";
-                    } elseif (!empty($nam_time) && $i < min($nam_time) || !empty($nam_time) && $i > max($nam_time)) {
-                        $string_nam1 = "<td width=83 align=center><font color=000000>" . $nam_init . "z NAM</font></td>";
-                        $string_nam2 = "<td width=83 align=center></td>";
-                        $string_nam3 = "<td width=83 align=center></td>";
-                        $string_nam4 = "<td width=83 align=center></td>";
-                        $string_nam5 = "<td width=83 align=center></td>";
-                        $string_nam6 = "<td width=83 align=center></td>";
-                        $string_nam7 = "<td width=83 align=center></td>";
-                        $string_nam8 = "<td width=83 align=center></td>";
+                foreach ($sources as $key => $src) {
+                    if ($src["check"] != 1) {
+                        continue;
                     }
-                }
-                if ($namm_check == 1) {
-                    if (in_array($i, $namm_time)) {
-                        $index = array_search($i, $namm_time);
-                        $string_namm1 = "<td width=83 align=center><font color=000000>" . $namm_init . "z NAM</font></td>";
-                        $string_namm2 = "<td width=83 align=center><font color=000000>" . $namm_date[$index] . "</font></td>";
-                        $string_namm3 = "<td width=83 align=center><font color=0000FF>" . $namm_var1[$index] . "</font></td>";
-                        $string_namm4 = "<td width=83 align=center><font color=000099>" . $namm_var2[$index] . "</font></td>";
-                        $string_namm5 = "<td width=83 align=center><font color=CC0000>" . $namm_var3[$index] . "</font></td>";
-                        $string_namm6 = "<td width=83 align=center><font color=006600>" . $namm_var4[$index] . "</font></td>";
-                        $string_namm7 = "<td width=83 align=center><font color=000000>" . $namm_var5[$index] . "</font></td>";
-                        $string_namm8 = "<td width=83 align=center><font color=000000>" . $namm_var6[$index] . "</font></td>";
-                    } elseif (!empty($namm_time) && $i < min($namm_time) || !empty($namm_time) && $i > max($namm_time)) {
-                        $string_namm1 = "<td width=83 align=center><font color=000000>" . $namm_init . "z NAM</font></td>";
-                        $string_namm2 = "<td width=83 align=center></td>";
-                        $string_namm3 = "<td width=83 align=center></td>";
-                        $string_namm4 = "<td width=83 align=center></td>";
-                        $string_namm5 = "<td width=83 align=center></td>";
-                        $string_namm6 = "<td width=83 align=center></td>";
-                        $string_namm7 = "<td width=83 align=center></td>";
-                        $string_namm8 = "<td width=83 align=center></td>";
-                    }
-                }
-                if ($gfs_check == 1) {
-                    if (in_array($i, $gfs_time)) {
-                        $index = array_search($i, $gfs_time);
-                        $string_gfs1 = "<td width=83 align=center><font color=000000>" . $gfs_init . "z GFS</font></td>";
-                        $string_gfs2 = "<td width=83 align=center><font color=000000>" . $gfs_date[$index] . "</font></td>";
-                        $string_gfs3 = "<td width=83 align=center><font color=0000FF>" . $gfs_var1[$index] . "</font></td>";
-                        $string_gfs4 = "<td width=83 align=center><font color=000099>" . $gfs_var2[$index] . "</font></td>";
-                        $string_gfs5 = "<td width=83 align=center><font color=CC0000>" . $gfs_var3[$index] . "</font></td>";
-                        $string_gfs6 = "<td width=83 align=center><font color=006600>" . $gfs_var4[$index] . "</font></td>";
-                        $string_gfs7 = "<td width=83 align=center><font color=000000>" . $gfs_var5[$index] . "</font></td>";
-                        $string_gfs8 = "<td width=83 align=center><font color=000000>" . $gfs_var6[$index] . "</font></td>";
-                    } elseif (!empty($gfs_time) && $i < min($gfs_time) || !empty($gfs_time) && $i > max($gfs_time)) {
-                        $string_gfs1 = "<td width=83 align=center><font color=000000>" . $gfs_init . "z GFS</font></td>";
-                        $string_gfs2 = "<td width=83 align=center></td>";
-                        $string_gfs3 = "<td width=83 align=center></td>";
-                        $string_gfs4 = "<td width=83 align=center></td>";
-                        $string_gfs5 = "<td width=83 align=center></td>";
-                        $string_gfs6 = "<td width=83 align=center></td>";
-                        $string_gfs7 = "<td width=83 align=center></td>";
-                        $string_gfs8 = "<td width=83 align=center></td>";
-                    }
-                }
-                if ($gfsm_check == 1) {
-                    if (in_array($i, $gfsm_time)) {
-                        $index = array_search($i, $gfsm_time);
-                        $string_gfsm1 = "<td width=83 align=center><font color=000000>" . $gfsm_init . "z GFS</font></td>";
-                        $string_gfsm2 = "<td width=83 align=center><font color=000000>" . $gfsm_date[$index] . "</font></td>";
-                        $string_gfsm3 = "<td width=83 align=center><font color=0000FF>" . $gfsm_var1[$index] . "</font></td>";
-                        $string_gfsm4 = "<td width=83 align=center><font color=000099>" . $gfsm_var2[$index] . "</font></td>";
-                        $string_gfsm5 = "<td width=83 align=center><font color=CC0000>" . $gfsm_var3[$index] . "</font></td>";
-                        $string_gfsm6 = "<td width=83 align=center><font color=006600>" . $gfsm_var4[$index] . "</font></td>";
-                        $string_gfsm7 = "<td width=83 align=center><font color=000000>" . $gfsm_var5[$index] . "</font></td>";
-                        $string_gfsm8 = "<td width=83 align=center><font color=000000>" . $gfsm_var6[$index] . "</font></td>";
-                    } elseif (!empty($gfsm_time) && $i < min($gfsm_time) || !empty($gfsm_time) && $i > max($gfsm_time)) {
-                        $string_gfsm1 = "<td width=83 align=center><font color=000000>" . $gfsm_init . "z GFS</font></td>";
-                        $string_gfsm2 = "<td width=83 align=center></td>";
-                        $string_gfsm3 = "<td width=83 align=center></td>";
-                        $string_gfsm4 = "<td width=83 align=center></td>";
-                        $string_gfsm5 = "<td width=83 align=center></td>";
-                        $string_gfsm6 = "<td width=83 align=center></td>";
-                        $string_gfsm7 = "<td width=83 align=center></td>";
-                        $string_gfsm8 = "<td width=83 align=center></td>";
-                    }
-                }
-                if ($rap_check == 1) {
-                    if (in_array($i, $rap_time)) {
-                        $index = array_search($i, $rap_time);
-                        if ($date >= 2012050100) {
-                            $string_rap1 = "<td width=83 align=center><font color=000000>" . $rap_init . "z RAP</font></td>";
-                        } else {
-                            $string_rap1 = "<td width=83 align=center><font color=000000>" . $rap_init . "z RUC</font></td>";
+                    $times = $src["times"];
+                    $width = isset($src["width"]) ? $src["width"] : 83;
+                    $bold = isset($src["bold"]) ? $src["bold"] : false;
+                    if (in_array($i, $times)) {
+                        $index = array_search($i, $times);
+                        $cols_vals = array();
+                        foreach ($src["cols"] as $col_arr) {
+                            $cols_vals[] = $col_arr[$index];
                         }
-                        $string_rap2 = "<td width=83 align=center><font color=000000>" . $rap_date[$index] . "</font></td>";
-                        $string_rap3 = "<td width=83 align=center><font color=0000FF>" . $rap_var1[$index] . "</font></td>";
-                        $string_rap4 = "<td width=83 align=center><font color=000099>" . $rap_var2[$index] . "</font></td>";
-                        $string_rap5 = "<td width=83 align=center><font color=CC0000>" . $rap_var3[$index] . "</font></td>";
-                        $string_rap6 = "<td width=83 align=center><font color=006600>" . $rap_var4[$index] . "</font></td>";
-                        $string_rap7 = "<td width=83 align=center><font color=000000>" . $rap_var5[$index] . "</font></td>";
-                        $string_rap8 = "<td width=83 align=center><font color=000000>" . $rap_var6[$index] . "</font></td>";
-                    } elseif (!empty($rap_time) && $i < min($rap_time) || !empty($rap_time) && $i > max($rap_time)) {
-                        if ($date >= 2012050100) {
-                            $string_rap1 = "<td width=83 align=center><font color=000000>" . $rap_init . "z RAP</font></td>";
-                        } else {
-                            $string_rap1 = "<td width=83 align=center><font color=000000>" . $rap_init . "z RUC</font></td>";
-                        }
-                        $string_rap2 = "<td width=83 align=center></td>";
-                        $string_rap3 = "<td width=83 align=center></td>";
-                        $string_rap4 = "<td width=83 align=center></td>";
-                        $string_rap5 = "<td width=83 align=center></td>";
-                        $string_rap6 = "<td width=83 align=center></td>";
-                        $string_rap7 = "<td width=83 align=center></td>";
-                        $string_rap8 = "<td width=83 align=center></td>";
-                    }
-                }
-                if ($nam4km_check == 1) {
-                    if (in_array($i, $nam4km_time)) {
-                        $index = array_search($i, $nam4km_time);
-                        $string_nam4km1 = "<td width=83 align=center><font color=000000>" . $nam4km_init . "z NAM 4km</font></td>";
-                        $string_nam4km2 = "<td width=83 align=center><font color=000000>" . $nam4km_date[$index] . "</font></td>";
-                        $string_nam4km3 = "<td width=83 align=center><font color=0000FF>" . $nam4km_var1[$index] . "</font></td>";
-                        $string_nam4km4 = "<td width=83 align=center><font color=000099>" . $nam4km_var2[$index] . "</font></td>";
-                        $string_nam4km5 = "<td width=83 align=center><font color=CC0000>" . $nam4km_var3[$index] . "</font></td>";
-                        $string_nam4km6 = "<td width=83 align=center><font color=006600>" . $nam4km_var4[$index] . "</font></td>";
-                        $string_nam4km7 = "<td width=83 align=center><font color=000000>" . $nam4km_var5[$index] . "</font></td>";
-                        $string_nam4km8 = "<td width=83 align=center><font color=000000>" . $nam4km_var6[$index] . "</font></td>";
-                    } elseif (!empty($nam4km_time) && $i < min($nam4km_time) || !empty($nam4km_time) && $i > max($nam4km_time)) {
-                        $string_nam4km1 = "<td width=83 align=center><font color=000000>" . $nam4km_init . "z NAM 4km</font></td>";
-                        $string_nam4km2 = "<td width=83 align=center></td>";
-                        $string_nam4km3 = "<td width=83 align=center></td>";
-                        $string_nam4km4 = "<td width=83 align=center></td>";
-                        $string_nam4km5 = "<td width=83 align=center></td>";
-                        $string_nam4km6 = "<td width=83 align=center></td>";
-                        $string_nam4km7 = "<td width=83 align=center></td>";
-                        $string_nam4km8 = "<td width=83 align=center></td>";
-                    }
-                }
-                if ($nam_mos_check == 1) {
-                    if (in_array($i, $nam_mos_time)) {
-                        $index = array_search($i, $nam_mos_time);
-                        $string_nam_mos1 = "<td width=83 align=center><font color=000000>" . $nam_init . "z NAM MOS</font></td>";
-                        $string_nam_mos2 = "<td width=83 align=center><font color=000000>" . $nam_mos_date[$index] . "</font></td>";
-                        $string_nam_mos3 = "<td width=83 align=center><font color=0000FF>-</font></td>";
-                        $string_nam_mos4 = "<td width=83 align=center><font color=000099>-</font></td>";
-                        $string_nam_mos5 = "<td width=83 align=center><font color=CC0000>" . $nam_mos_temp[$index] . "</font></td>";
-                        $string_nam_mos6 = "<td width=83 align=center><font color=006600>" . $nam_mos_dew[$index] . "</font></td>";
-                        $string_nam_mos7 = "<td width=83 align=center><font color=000000>" . $nam_mos_wspd[$index] . "</font></td>";
-                        $string_nam_mos8 = "<td width=83 align=center><font color=000000>" . $nam_mos_wind_dir[$index] . "</font></td>";
-                    } elseif (!empty($nam_mos_time) && $i < min($nam_mos_time) || !empty($nam_mos_time) && $i > max($nam_mos_time)) {
-                        $string_nam_mos1 = "<td width=83 align=center><font color=000000>" . $nam_init . "z NAM MOS</font></td>";
-                        $string_nam_mos2 = "<td width=83 align=center></td>";
-                        $string_nam_mos3 = "<td width=83 align=center></td>";
-                        $string_nam_mos4 = "<td width=83 align=center></td>";
-                        $string_nam_mos5 = "<td width=83 align=center></td>";
-                        $string_nam_mos6 = "<td width=83 align=center></td>";
-                        $string_nam_mos7 = "<td width=83 align=center></td>";
-                        $string_nam_mos8 = "<td width=83 align=center></td>";
-                    }
-                }
-                if ($gfs_mos_check == 1) {
-                    if (in_array($i, $gfs_mos_time)) {
-                        $index = array_search($i, $gfs_mos_time);
-                        $string_gfs_mos1 = "<td width=83 align=center><font color=000000>" . $gfs_init . "z GFS MOS</font></td>";
-                        $string_gfs_mos2 = "<td width=83 align=center><font color=000000>" . $gfs_mos_date[$index] . "</font></td>";
-                        $string_gfs_mos3 = "<td width=83 align=center><font color=0000FF>-</font></td>";
-                        $string_gfs_mos4 = "<td width=83 align=center><font color=000099>-</font></td>";
-                        $string_gfs_mos5 = "<td width=83 align=center><font color=CC0000>" . $gfs_mos_temp[$index] . "</font></td>";
-                        $string_gfs_mos6 = "<td width=83 align=center><font color=006600>" . $gfs_mos_dew[$index] . "</font></td>";
-                        $string_gfs_mos7 = "<td width=83 align=center><font color=000000>" . $gfs_mos_wspd[$index] . "</font></td>";
-                        $string_gfs_mos8 = "<td width=83 align=center><font color=000000>" . $gfs_mos_wind_dir[$index] . "</font></td>";
-                    } elseif (!empty($gfs_mos_time) && $i < min($gfs_mos_time) || !empty($gfs_mos_time) && $i > max($gfs_mos_time)) {
-                        $string_gfs_mos1 = "<td width=83 align=center><font color=000000>" . $gfs_init . "z GFS MOS</font></td>";
-                        $string_gfs_mos2 = "<td width=83 align=center></td>";
-                        $string_gfs_mos3 = "<td width=83 align=center></td>";
-                        $string_gfs_mos4 = "<td width=83 align=center></td>";
-                        $string_gfs_mos5 = "<td width=83 align=center></td>";
-                        $string_gfs_mos6 = "<td width=83 align=center></td>";
-                        $string_gfs_mos7 = "<td width=83 align=center></td>";
-                        $string_gfs_mos8 = "<td width=83 align=center></td>";
-                    }
-                }
-                if ($gfsm_mos_check == 1) {
-                    if (in_array($i, $gfsm_mos_time)) {
-                        $index = array_search($i, $gfsm_mos_time);
-                        $string_gfsm_mos1 = "<td width=83 align=center><font color=000000>" . $gfsm_init . "z GFS MOS</font></td>";
-                        $string_gfsm_mos2 = "<td width=83 align=center><font color=000000>" . $gfsm_mos_date[$index] . "</font></td>";
-                        $string_gfsm_mos3 = "<td width=83 align=center><font color=0000FF>-</font></td>";
-                        $string_gfsm_mos4 = "<td width=83 align=center><font color=000099>-</font></td>";
-                        $string_gfsm_mos5 = "<td width=83 align=center><font color=CC0000>" . $gfsm_mos_temp[$index] . "</font></td>";
-                        $string_gfsm_mos6 = "<td width=83 align=center><font color=006600>" . $gfsm_mos_dew[$index] . "</font></td>";
-                        $string_gfsm_mos7 = "<td width=83 align=center><font color=000000>" . $gfsm_mos_wspd[$index] . "</font></td>";
-                        $string_gfsm_mos8 = "<td width=83 align=center><font color=000000>" . $gfsm_mos_wind_dir[$index] . "</font></td>";
-                    } elseif (!empty($gfsm_mos_time) && $i < min($gfsm_mos_time) || !empty($gfsm_mos_time) && $i > max($gfsm_mos_time)) {
-                        $string_gfsm_mos1 = "<td width=83 align=center><font color=000000>" . $gfsm_init . "z GFS MOS</font></td>";
-                        $string_gfsm_mos2 = "<td width=83 align=center></td>";
-                        $string_gfsm_mos3 = "<td width=83 align=center></td>";
-                        $string_gfsm_mos4 = "<td width=83 align=center></td>";
-                        $string_gfsm_mos5 = "<td width=83 align=center></td>";
-                        $string_gfsm_mos6 = "<td width=83 align=center></td>";
-                        $string_gfsm_mos7 = "<td width=83 align=center></td>";
-                        $string_gfsm_mos8 = "<td width=83 align=center></td>";
-                    }
-                }
-                if ($con_check == 1) {
-                    if (in_array($i, $consensus_t)) {
-                        $index = array_search($i, $consensus_t);
-                        $string_con1 = "<td width=90 align=center><font color=000000><b>Model Average</b></font></td>";
-                        $string_con2 = "<td width=90 align=center><font color=000000><b>" . $con_date[$index] . "</b></font></td>";
-                        $string_con3 = "<td width=90 align=center><font color=0000FF><b>" . $con_p[$index] . " in.</b></font></td>";
-                        $string_con4 = "<td width=90 align=center><font color=000099><b>" . $con_pa[$index] . " in.</b></font></td>";
-                        $string_con5 = "<td width=90 align=center><font color=CC0000><b>" . $con_temp[$index] . " F</b></font></td>";
-                        $string_con6 = "<td width=90 align=center><font color=006600><b>" . $con_dew[$index] . " F</b></font></td>";
-                        $string_con7 = "<td width=90 align=center><font color=000000><b>" . $con_ws[$index] . " mph</b></font></td>";
-                        $string_con8 = "<td width=90 align=center><font color=000000><b>" . $con_wd[$index] . "</b></font></td>";
-                    } elseif (!empty($consensus_t) && $i < min($consensus_t) || !empty($consensus_t) && $i > max($consensus_t)) {
-                        $string_con1 = "<td width=90 align=center><font color=000000><b>Model Average</b></font></td>";
-                        $string_con2 = "<td width=90 align=center></td>";
-                        $string_con3 = "<td width=90 align=center></td>";
-                        $string_con4 = "<td width=90 align=center></td>";
-                        $string_con5 = "<td width=90 align=center></td>";
-                        $string_con6 = "<td width=90 align=center></td>";
-                        $string_con7 = "<td width=90 align=center></td>";
-                        $string_con8 = "<td width=90 align=center></td>";
-                    }
-                }
-                if ($nws_check == 1) {
-                    if (in_array($i, $nws_time_1)) {
-                        $index = array_search($i, $nws_time_1);
-                        $string_nws1 = "<td width=83 align=center><font color=000000>NWS</font></td>";
-                        $string_nws2 = "<td width=83 align=center><font color=000000>" . $nws_date[$index] . "</font></td>";
-                        $string_nws3 = "<td width=83 align=center><font color=0000FF>" . $nws_precip[$index] . "</font></td>";
-                        $string_nws4 = "<td width=83 align=center><font color=000099>" . $nws_sum[$index] . "</font></td>";
-                        $string_nws5 = "<td width=83 align=center><font color=CC0000>" . $nws_temp[$index] . "</font></td>";
-                        $string_nws6 = "<td width=83 align=center><font color=006600>" . $nws_dpt[$index] . "</font></td>";
-                        $string_nws7 = "<td width=83 align=center><font color=000000>" . $nws_wind_spd[$index] . "</font></td>";
-                        $string_nws8 = "<td width=83 align=center><font color=000000>" . $nws_wind_dir[$index] . "</font></td>";
-                    } elseif (!empty($nws_time_1) && $i < min($nws_time_1) || !empty($nws_time_1) && $i > max($nws_time_1)) {
-                        $string_nws1 = "<td width=83 align=center><font color=000000>NWS</font></td>";
-                        $string_nws2 = "<td width=83 align=center></td>";
-                        $string_nws3 = "<td width=83 align=center></td>";
-                        $string_nws4 = "<td width=83 align=center></td>";
-                        $string_nws5 = "<td width=83 align=center></td>";
-                        $string_nws6 = "<td width=83 align=center></td>";
-                        $string_nws7 = "<td width=83 align=center></td>";
-                        $string_nws8 = "<td width=83 align=center></td>";
-                    }
-                }
-                if ($obs_check == 1) {
-                    if (in_array($i, $obs_time)) {
-                        $index = array_search($i, $obs_time);
-                        $string_obs1 = "<td width=83 align=center><font color=000000>OBS - " . $ob_station . "</font></td>";
-                        $string_obs2 = "<td width=83 align=center><font color=000000>" . $obs_date[$index] . "</font></td>";
-                        $string_obs3 = "<td width=83 align=center><font color=0000FF>" . $obs_precip[$index] . "</font></td>";
-                        $string_obs4 = "<td width=83 align=center><font color=000099>" . $obs_precip_accum[$index] . "</font></td>";
-                        $string_obs5 = "<td width=83 align=center><font color=CC0000>" . $obs_temp[$index] . "</font></td>";
-                        $string_obs6 = "<td width=83 align=center><font color=006600>" . $obs_dew[$index] . "</font></td>";
-                        $string_obs7 = "<td width=83 align=center><font color=000000>" . $obs_wspd[$index] . "</font></td>";
-                        $string_obs8 = "<td width=83 align=center><font color=000000>" . $obs_wdir[$index] . "</font></td>";
-                    } elseif (!empty($obs_time) && $i < min($obs_time) || !empty($obs_time) && $i > max($obs_time)) {
-                        $string_obs1 = "<td width=83 align=center><font color=000000>OBS - " . $ob_station . "</font></td>";
-                        $string_obs2 = "<td width=83 align=center></td>";
-                        $string_obs3 = "<td width=83 align=center></td>";
-                        $string_obs4 = "<td width=83 align=center></td>";
-                        $string_obs5 = "<td width=83 align=center></td>";
-                        $string_obs6 = "<td width=83 align=center></td>";
-                        $string_obs7 = "<td width=83 align=center></td>";
-                        $string_obs8 = "<td width=83 align=center></td>";
+                        $cell_state[$key] = render_source_cells($src["label"], $src["dates"][$index], $cols_vals, $width, $bold);
+                    } elseif (!empty($times) && ($i < min($times) || $i > max($times))) {
+                        $cell_state[$key] = render_source_cells($src["label"], null, null, $width, $bold);
                     }
                 }
 
                 $string_begin = "<area shape=rect coords=" . $ul . "," . $ur . "," . $lr . "," . $ll . " onMouseOver=\"writeText('";
                 $string_end = "'); setMouse(this); \" />\n";
 
-                $str_new1 = "<tr><td width=62><u>Model:</u></td>" . $string_nam1 . "" . $string_namm1 . "" . $string_nam4km1 . "" . $string_gfs1 . "" . $string_gfsm1 . "" . $string_rap1 . "" . $string_nam_mos1 . "" . $string_gfs_mos1 . "" . $string_gfsm_mos1 . "" . $string_con1 . "" . $string_nws1 . "" . $string_obs1 . "</tr>";
-                $str_new2 = "<tr><td><u>Day/Time:</u></td>" . $string_nam2 . "" . $string_namm2 . "" . $string_nam4km2 . "" . $string_gfs2 . "" . $string_gfsm2 . "" . $string_rap2 . "" . $string_nam_mos2 . "" . $string_gfs_mos2 . "" . $string_gfsm_mos2 . "" . $string_con2 . "" . $string_nws2 . "" . $string_obs2 . "</tr>";
-                $str_new3 = "<tr><td><u>QPF:</u></td>" . $string_nam3 . "" . $string_namm3 . "" . $string_nam4km3 . "" . $string_gfs3 . "" . $string_gfsm3 . "" . $string_rap3 . "" . $string_nam_mos3 . "" . $string_gfs_mos3 . "" . $string_gfsm_mos3 . "" . $string_con3 . "" . $string_nws3 . "" . $string_obs3 . "</tr>";
-                $str_new4 = "<tr><td><u>Total QPF:</u></td>" . $string_nam4 . "" . $string_namm4 . "" . $string_nam4km4 . "" . $string_gfs4 . "" . $string_gfsm4 . "" . $string_rap4 . "" . $string_nam_mos4 . "" . $string_gfs_mos4 . "" . $string_gfsm_mos4 . "" . $string_con4 . "" . $string_nws4 . "" . $string_obs4 . "</tr>";
-                $str_new5 = "<tr><td><u>2m Temp:</u></td>" . $string_nam5 . "" . $string_namm5 . "" . $string_nam4km5 . "" . $string_gfs5 . "" . $string_gfsm5 . "" . $string_rap5 . "" . $string_nam_mos5 . "" . $string_gfs_mos5 . "" . $string_gfsm_mos5 . "" . $string_con5 . "" . $string_nws5 . "" . $string_obs5 . "</tr>";
-                $str_new6 = "<tr><td><u>2m Dewp:</u></td>" . $string_nam6 . "" . $string_namm6 . "" . $string_nam4km6 . "" . $string_gfs6 . "" . $string_gfsm6 . "" . $string_rap6 . "" . $string_nam_mos6 . "" . $string_gfs_mos6 . "" . $string_gfsm_mos6 . "" . $string_con6 . "" . $string_nws6 . "" . $string_obs6 . "</tr>";
-                $str_new7 = "<tr><td><u>10m W-Spd:</u></td>" . $string_nam7 . "" . $string_namm7 . "" . $string_nam4km7 . "" . $string_gfs7 . "" . $string_gfsm7 . "" . $string_rap7 . "" . $string_nam_mos7 . "" . $string_gfs_mos7 . "" . $string_gfsm_mos7 . "" . $string_con7 . "" . $string_nws7 . "" . $string_obs7 . "</tr>";
-                $str_new8 = "<tr><td><u>10m W-Dir:</u></td>" . $string_nam8 . "" . $string_namm8 . "" . $string_nam4km8 . "" . $string_gfs8 . "" . $string_gfsm8 . "" . $string_rap8 . "" . $string_nam_mos8 . "" . $string_gfs_mos8 . "" . $string_gfsm_mos8 . "" . $string_con8 . "" . $string_nws8 . "" . $string_obs8 . "</tr>";
+                $table_html = "<table border=0 cellspacing=0 cellpadding=0>";
+                foreach ($row_titles as $r => $title) {
+                    $td_attr = ($r == 0) ? " width=62" : "";
+                    $table_html .= "<tr><td$td_attr>" . $title . "</td>";
+                    foreach ($sources as $key => $src) {
+                        $table_html .= $cell_state[$key][$r];
+                    }
+                    $table_html .= "</tr>";
+                }
+                $table_html .= "</table>";
 
-                echo "" . $string_begin . "<table border=0 cellspacing=0 cellpadding=0>" . $str_new1 . "" . $str_new2 . "" . $str_new3 . "" . $str_new4 . "" . $str_new5 . "" . $str_new6 . "" . $str_new7 . "" . $str_new8 . "</table>" . $string_end . "";
+                echo "" . $string_begin . $table_html . $string_end . "";
 
-                //$ul1 = $ul1+(899/($model_count+1));
                 $ul1 = $lr + 1;
                 $lr1 = $lr1 + (899 / ($model_count));
 
                 $ul = round(($ul1), 0);
                 $lr = round(($lr1), 0);
-                //echo "".$i.",".$index."\n";
 
             }
-
-            //echo "".$con.",".$obs."\n";
 
             ?>
 
