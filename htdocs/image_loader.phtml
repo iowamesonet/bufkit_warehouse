@@ -281,6 +281,9 @@ foreach ($model_prefixes as $mdl) {
                 }
             } else {
                 $mod_time = strtotime($d[1]);
+                if ($mod_time === FALSE) {
+                    continue;
+                }
                 $var1_out[] = "" . round($d[$index1], 2) . " in.";
                 $var2_out[] = "" . round($d[$index2], 2) . " in.";
                 $var3_out[] = "" . round($d[$index3], 0) . " F";
@@ -317,21 +320,23 @@ foreach ($model_prefixes as $mdl) {
     }
 }
 
-// Determine the overall min/max forecast time across whichever models returned data,
-// instead of relying solely on gfs/gfsm (which could both be empty and left $min/$max unset).
-$time_bounds = array();
+// Determine the overall min/max forecast time across all available models.
+$min_time = null;
+$max_time = null;
 foreach (array($gfs_time, $gfsm_time, $nam_time, $namm_time, $rap_time, $nam4km_time) as $t) {
-    if (!empty($t)) {
-        $time_bounds[] = array($t[0], $t[count($t) - 1]);
+    if (empty($t)) {
+        continue;
+    }
+    if ($min_time === null || $t[0] < $min_time) {
+        $min_time = $t[0];
+    }
+    if ($max_time === null || $t[count($t) - 1] > $max_time) {
+        $max_time = $t[count($t) - 1];
     }
 }
-if (!empty($time_bounds)) {
-    $min = min(array_column($time_bounds, 0));
-    $max = max(array_column($time_bounds, 1));
-} else {
-    $min = time();
-    $max = time();
-}
+
+$min = ($min_time !== null) ? $min_time : time();
+$max = ($max_time !== null) ? $max_time : time();
 $diff = ($max - $min) / 3600;
 if ($archive_check == 1) {
     $link = "https://mesonet.agron.iastate.edu/request/asos/csv.php?lat=" . $lat . "&lon=" . $lon . "&date=" . date("Y-m-d", $min) . "";

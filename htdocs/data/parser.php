@@ -283,7 +283,7 @@ if (substr($link, 0, 4) !== "http") {
     $link = METFS1 . "bufkit/$link";
 }
 
-$fh = file_get_contents($link);
+$fh = @file_get_contents($link);
 if ($fh === false) {
     die();
 }
