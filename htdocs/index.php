@@ -188,6 +188,10 @@ bufkit, bufget, use bufkit, bufkit archive">
                                 </center>
                             </h3>
                             <p>
+                                <strong>14 Sep 2026</strong>: Fixed a bug preventing the mouse-over data
+                                from appearing on the main image_loader page.
+                            </p>
+                            <p>
                                 <strong>11 Sep 2026</strong>: This website has a new home at https://bufkitwarehouse.org and
                                 work continues to make improvements to the system and support new models, like RRFS.
                             </p>

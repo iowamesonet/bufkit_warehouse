@@ -667,7 +667,7 @@ if ($var1 == "snow_accum" && $date == "") {
             $dt = 1;
             $link = METFS1 . "cobb/nam4km/nam4km_" . strtolower($site) . ".dat";
         }
-        $data = file_get_contents($link);
+        $data = @file_get_contents($link);
         if ($data === False) {
             continue;
         }
