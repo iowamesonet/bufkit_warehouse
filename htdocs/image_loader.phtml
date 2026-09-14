@@ -110,9 +110,1032 @@ if ($check1 == $sym) {
     $site_l = "" . $exam[0] . "" . $exam[1] . "" . $exam[2] . "";
 }
 
+$var_set1 = "nam=" . $nam_check . "&namm=" . $namm_check . "&rrfs=" . $rrfs_check . "&nam4km=" . $nam4km_check . "&gfs=" . $gfs_check . "&gfsm=" . $gfsm_check . "&rap=" . $rap_check . "&nam_mos=" . $nam_mos_check . "&gfs_mos=" . $gfs_mos_check . "&gfsm_mos=" . $gfsm_mos_check . "&nws=" . $nws_check . "&obs=" . $obs_check . "&con=" . $con_check . "";
+$var_set2 = "max_t=" . $max_t_check . "&cobb=" . $cobb_check . "&compaction=" . $compaction_check . "&ratio=" . $ratio . "";
+$var_set3 = "mean_mt=" . $mean_mt_check . "&max_mt=" . $max_mt_check . "&mean=" . $mean_check . "";
+if ($archive_check == 1) {
+    $var_set1 = "" . $var_set1 . "&date=" . $date . "";
+}
+
+$image_html = <<<EOM
+<p>
+<img src="images/plotter.php?site={$site_l}&var=snow_accum&{$var_set1}&{$var_set2}"
+alt="snow accumulation plot" usemap="#precip" border="0">
+</p>
+
+<p>
+<img src="images/plotter.php?site={$site_l}&var=qpf_accum&{$var_set1}"
+alt="precip accumulation plot" usemap="#precip" border="0">
+</p>
+
+<p>
+<img src="images/plotter.php?site={$site_l}&var=tf&{$var_set1}"
+alt="temperature plot" usemap="#precip" border="0">
+</p>
+<p>
+<img src="images/plotter.php?site={$site_l}&var=hiwc&{$var_set1}"
+alt="apparent temp plot" usemap="#precip" border="0">
+</p>
+<p>
+<img src="images/plotter.php?site={$site_l}&var=td&{$var_set1}" alt="dewpoint plot" usemap="#precip" border="0">
+</p>
+<p>
+<img src="images/plotter.php?site={$site_l}&var=wind&{$var_set1}&{$var_set3}" alt="wind speed plot" usemap="#precip" border="0">
+</p>
+<p>
+<img src="images/plotter.php?site={$site_l}&var=wdir&{$var_set1}" alt="wind direction plot" usemap="#precip" border="0">
+</p>
+<p>
+<img src="images/plotter.php?site={$site_l}&var=frz_rain&{$var_set1}" alt="freezing rain plot" usemap="#precip" border="0">
+</p>
+<p>
+<img src="images/plotter.php?site={$site_l}&var=sleet&{$var_set1}" alt="sleet plot" usemap="#precip" border="0">
+</p>
+EOM;
+
+/**
+ * Get the wind direction from the wind angle
+ * @param float $cam_ang The wind angle in degrees
+ * @return string The wind direction as a compass point
+ */
+function get_wind_dir($cam_ang)
+{
+    $dir = "N";
+    if (11 < $cam_ang && $cam_ang <= 34) {
+        $dir = "NNE";
+    } elseif (34 < $cam_ang && $cam_ang <= 45) {
+        $dir = "NE";
+    } elseif (45 < $cam_ang && $cam_ang <= 56) {
+        $dir = "NE";
+    } elseif (56 < $cam_ang && $cam_ang <= 79) {
+        $dir = "ENE";
+    } elseif (79 < $cam_ang && $cam_ang <= 101) {
+        $dir = "E";
+    } elseif (101 < $cam_ang && $cam_ang <= 124) {
+        $dir = "ESE";
+    } elseif (124 < $cam_ang && $cam_ang <= 135) {
+        $dir = "SE";
+    } elseif (135 < $cam_ang && $cam_ang <= 146) {
+        $dir = "SE";
+    } elseif (146 < $cam_ang && $cam_ang <= 169) {
+        $dir = "SSE";
+    } elseif (169 < $cam_ang && $cam_ang <= 191) {
+        $dir = "S";
+    } elseif (191 < $cam_ang && $cam_ang <= 214) {
+        $dir = "SSW";
+    } elseif (214 < $cam_ang && $cam_ang <= 225) {
+        $dir = "SW";
+    } elseif (225 < $cam_ang && $cam_ang <= 236) {
+        $dir = "SW";
+    } elseif (236 < $cam_ang && $cam_ang <= 259) {
+        $dir = "WSW";
+    } elseif (259 < $cam_ang && $cam_ang <= 281) {
+        $dir = "W";
+    } elseif (281 < $cam_ang && $cam_ang <= 304) {
+        $dir = "WNW";
+    } elseif (304 < $cam_ang && $cam_ang <= 315) {
+        $dir = "NW";
+    } elseif (315 < $cam_ang && $cam_ang <= 326) {
+        $dir = "NW";
+    } elseif (326 < $cam_ang && $cam_ang <= 349) {
+        $dir = "NNW";
+    } elseif (349 < $cam_ang && $cam_ang <= 360) {
+        $dir = "N";
+    }
+    return $dir;
+}
+
+
+// check if site is in master list.  If not, terminate script and tell user
+$found = 0;
+$sites = array();
+for ($z = 0; $z <= 1; $z++) {
+    if ($z == 0) {
+        $master_list = "images/nam_bufrstations.txt";
+    } elseif ($z == 1) {
+        $master_list = "images/gfs3_bufrstations.txt";
+    }
+    $data = file($master_list);
+    foreach ($data as $line) {
+        $d = explode(" ", trim(preg_replace('/\s+/', ' ', $line)));
+        $sites[] = strtolower($d[3]);
+        if ($site == strtolower($d[3])) {
+            $found = 1;
+            if ($z == 0) {
+                if ($site == "kaus") {
+                    $lat = $d[1] - 0.1;
+                    $lon = $d[2];
+                } else {
+                    $lat = $d[1];
+                    $lon = $d[2];
+                }
+            } elseif ($z == 1) {
+                if (strpbrk($d[1], "N")) {
+                    $lat = trim($d[1], "N");
+                } else {
+                    $lat = trim($d[1], "S") * -1;
+                }
+                if (strpbrk($d[2], "E")) {
+                    $lon = trim($d[2], "E");
+                } else {
+                    $lon = trim($d[2], "W") * -1;
+                }
+            }
+            break;
+        }
+    }
+    if ($found == 1) {
+        break;
+    }
+}
+if (!(in_array($site, $sites))) {
+    die("Site " . $site . " is not available.  Try again.");
+}
+
+$var1 = "qpf";
+$var2 = "qpf_accum";
+$var3 = "tf";
+$var4 = "td";
+$var5 = "wspd";
+$var6 = "wdir";
+$var7 = "uwnd";
+$var8 = "vwnd";
+
+/**
+ * Compute the archive-mode `date=` query param passed to data/parser.php per model
+ *
+ * @param string $mdl The model name (e.g., "nam", "gfs", "rap")
+ * @param int $archive_check Flag indicating if archive mode is active (1 for archive mode)
+ * @param int $year The year component of the date
+ * @param int $month The month component of the date
+ * @param int $day The day component of the date
+ * @param int $hour The hour component of the date
+ * @return string|null The computed parse date string or null if not applicable
+ */
+function compute_model_parse_date($mdl, $archive_check, $year, $month, $day, $hour)
+{
+    if ($mdl == "rap") {
+        return "" . $year . "" . $month . "" . $day . "" . $hour . "";
+    }
+    if ($archive_check != 1) {
+        return null;
+    }
+    if (in_array($mdl, array("nam", "gfs", "nam4km"))) {
+        if ($hour >= 0 && $hour <= 11) {
+            return "" . $year . "" . $month . "" . $day . "00";
+        }
+        return "" . $year . "" . $month . "" . $day . "12";
+    }
+    // namm, gfsm
+    if ($hour >= 0 && $hour <= 5) {
+        $temp_date = strtotime("" . $year . "-" . $month . "-" . $day . " 00:00:00") - 21600;
+        return date("YmdH", $temp_date);
+    } elseif ($hour >= 6 && $hour <= 17) {
+        return "" . $year . "" . $month . "" . $day . "06";
+    }
+    return "" . $year . "" . $month . "" . $day . "18";
+}
+
+$model_prefixes = array("nam", "namm", "gfs", "gfsm", "rap", "nam4km");
+foreach ($model_prefixes as $mdl) {
+    $var1_out = array();
+    $var2_out = array();
+    $var3_out = array();
+    $var4_out = array();
+    $var5_out = array();
+    $var6_out = array();
+    $date_out = array();
+    $time_out = array();
+    $wind_x_out = array();
+    $wind_y_out = array();
+    $init_out = null;
+    $init_date_out = null;
+
+    $parse_date = compute_model_parse_date($mdl, $archive_check, $year, $month, $day, $hour);
+    if ($archive_check != 1) {
+        $link = ROOTURL . "data/parser.php?model=" . $mdl . "&site=" . $site_l . "";
+    } else {
+        $link = ROOTURL . "data/parser.php?model=" . $mdl . "&site=" . $site_l . "&date=" . $parse_date . "";
+    }
+    $data = file_get_contents($link);
+    $z2 = 0;
+    if ($data !== False) {
+        foreach (explode("\n", $data) as $line) {
+            $d = explode("\t", trim($line));
+            $z2++;
+            if ($z2 == 1) {
+                if (array_search($var1, $d)) {
+                    $index1 = array_search($var1, $d);
+                } else {
+                    continue;
+                }
+                if (array_search($var2, $d)) {
+                    $index2 = array_search($var2, $d);
+                } else {
+                    continue;
+                }
+                if (array_search($var3, $d)) {
+                    $index3 = array_search($var3, $d);
+                } else {
+                    continue;
+                }
+                if (array_search($var4, $d)) {
+                    $index4 = array_search($var4, $d);
+                } else {
+                    continue;
+                }
+                if (array_search($var5, $d)) {
+                    $index5 = array_search($var5, $d);
+                } else {
+                    continue;
+                }
+                if (array_search($var6, $d)) {
+                    $index6 = array_search($var6, $d);
+                } else {
+                    continue;
+                }
+                if (array_search($var7, $d)) {
+                    $index7 = array_search($var7, $d);
+                } else {
+                    continue;
+                }
+                if (array_search($var8, $d)) {
+                    $index8 = array_search($var8, $d);
+                } else {
+                    continue;
+                }
+            } else {
+                $mod_time = strtotime($d[1]);
+                $var1_out[] = "" . round($d[$index1], 2) . " in.";
+                $var2_out[] = "" . round($d[$index2], 2) . " in.";
+                $var3_out[] = "" . round($d[$index3], 0) . " F";
+                $var4_out[] = "" . round($d[$index4], 0) . " F";
+                $var5_out[] = "" . round($d[$index5], 0) . " mph";
+                $var6_out[] = get_wind_dir($d[$index6]);
+                $time_out[] = $mod_time;
+                $date_out[] = date("m/d @ H\z", $mod_time);
+                $wind_x_out[] = $d[$index7];
+                $wind_y_out[] = $d[$index8];
+                if ($z2 == 2) {
+                    $init_out = ($mdl == "nam4km") ? date("H", $mod_time - 3600) : date("H", $mod_time);
+                    if ($mdl == "gfs" || $mdl == "gfsm") {
+                        $init_date_out = date("YmdH", $mod_time);
+                    }
+                }
+            }
+        }
+    }
+
+    ${$mdl . "_var1"} = $var1_out;
+    ${$mdl . "_var2"} = $var2_out;
+    ${$mdl . "_var3"} = $var3_out;
+    ${$mdl . "_var4"} = $var4_out;
+    ${$mdl . "_var5"} = $var5_out;
+    ${$mdl . "_var6"} = $var6_out;
+    ${$mdl . "_date"} = $date_out;
+    ${$mdl . "_time"} = $time_out;
+    ${$mdl . "_wind_x"} = $wind_x_out;
+    ${$mdl . "_wind_y"} = $wind_y_out;
+    ${$mdl . "_init"} = $init_out;
+    if ($init_date_out !== null) {
+        ${$mdl . "_init_date"} = $init_date_out;
+    }
+}
+
+// Determine the overall min/max forecast time across whichever models returned data,
+// instead of relying solely on gfs/gfsm (which could both be empty and left $min/$max unset).
+$time_bounds = array();
+foreach (array($gfs_time, $gfsm_time, $nam_time, $namm_time, $rap_time, $nam4km_time) as $t) {
+    if (!empty($t)) {
+        $time_bounds[] = array($t[0], $t[count($t) - 1]);
+    }
+}
+if (!empty($time_bounds)) {
+    $min = min(array_column($time_bounds, 0));
+    $max = max(array_column($time_bounds, 1));
+} else {
+    $min = time();
+    $max = time();
+}
+$diff = ($max - $min) / 3600;
+if ($archive_check == 1) {
+    $link = "https://mesonet.agron.iastate.edu/request/asos/csv.php?lat=" . $lat . "&lon=" . $lon . "&date=" . date("Y-m-d", $min) . "";
+} else {
+    $link = "https://mesonet.agron.iastate.edu/request/asos/csv.php?lat=" . $lat . "&lon=" . $lon . "";
+}
+$obs_time = array();
+$obs_temp = array();
+$obs_dew = array();
+$obs_wspd = array();
+$obs_wdir = array();
+$obs_precip = array();
+$obs_precip_accum = array();
+$obs_date = array();
+$ob_station = "";
+$z = 0;
+$kf = -1;
+$data = file($link);
+$oHourLast = -99;
+foreach ($data as $line) {
+    $z++;
+    if ($z > 1) {
+        $d = explode(",", trim($line));
+        $ob_time = strtotime("" . $d[1] . "Z");
+        $minute = date("i", $ob_time);
+        $oHour = date("H", $ob_time);
+        if ($ob_time >= ($min - 3600) && $d[2] != -99 && $minute >= 45 && $minute <= 56 && $oHour != $oHourLast) {
+            $kf++;
+            $obs_lat = $d[10];
+            $obs_lon = $d[9];
+            $lat_diff = abs($lat - $obs_lat);
+            $lon_diff = abs($lon - $obs_lon);
+            if ($lat_diff > 1 || $lon_diff > 1) {
+                break;
+            }
+            if (strlen($d[0]) == 3) {
+                $ob_station = "K" . $d[0] . "";
+            } else {
+                $ob_station = $d[0];
+            }
+            $obs_time1[] = $ob_time;
+            $ob_time2 = $ob_time + 3600;
+            $obs_time[] = strtotime(date("Y-m-d H:00:00", $ob_time2));
+            if (is_numeric($d[2])) {
+                $obs_temp[] = "" . round($d[2], 1) . " F";
+            } else {
+                $obs_temp[] = "M";
+            }
+            if (is_numeric($d[3])) {
+                $obs_dew[] = "" . round($d[3], 1) . " F";
+            } else {
+                $obs_dew[] = "M";
+            }
+            $obs_wspd[] = "" . round($d[4] * 1.15077945, 0) . " mph";
+            $obs_wdir[] = get_wind_dir($d[5]);
+            $obs_precip[] = "" . round($d[6], 2) . " in.";
+            $obs_precip_accum[] = "" . round(array_sum($obs_precip), 2) . " in.";
+            $obs_date[] = date("m/d @ H\z", $ob_time2);
+            $oHourLast = $oHour;
+        }
+    }
+}
+
+$init_year = date('Y', $min);
+$init_mon = date('m', $min);
+$init_day = date('d', $min);
+$init_h = date('H', $min);
+$end_year = date('Y', $max);
+$end_mon = date('m', $max);
+$end_day = date('d', $max);
+$end_h = date('H', $max);
+
+$init_time =  "" . $init_year . "-" . $init_mon . "-" . $init_day . "T" . $init_h . "";
+$end_time =  "" . $end_year . "-" . $end_mon . "-" . $end_day . "T" . $end_h . "";
+
+$link4_1 = "https://graphical.weather.gov/xml/SOAP_server/ndfdXMLclient.php?whichClient=NDFDgen&lat=" . $lat . "&lon=" . $lon . "&listLatLon=&lat1=&lon1=&lat2=&lon2=&resolutionSub=&listLat1=&listLon1=";
+$link4_2 = "&listLat2=&listLon2=&resolutionList=&endPoint1Lat=&endPoint1Lon=&endPoint2Lat=&endPoint2Lon=&listEndPoint1Lat=&listEndPoint1Lon=&listEndPoint2Lat=&listEndPoint2Lon=&zipCodeList=";
+$link4_3 = "&listZipCodeList=&centerPointLat=&centerPointLon=&distanceLat=&distanceLon=&resolutionSquare=&listCenterPointLat=&listCenterPointLon=&listDistanceLat=&listDistanceLon=";
+$link4_4 = "&listResolutionSquare=&citiesLevel=&listCitiesLevel=&sector=&gmlListLatLon=&featureType=&requestedTime=&startTime=&endTime=&compType=&propertyName=";
+$link4_5 = "&product=time-series&begin=" . $init_time . "%3A00%3A00&end=" . $end_time . "%3A00%3A00&temp=temp&qpf=qpf&dew=dew&wspd=wspd&wdir=wdir&Submit=Submit";
+$link4 = "" . $link4_1 . "" . $link4_2 . "" . $link4_3 . "" . $link4_4 . "" . $link4_5 . "";
+
+$nws_start_time_1 = "start-valid-time";
+$nws_end_time_1 = "/time-layout";
+$nws_start_time_2 = "end-valid-time";
+$nws_end_time_2 = "/time-layout";
+$nws_wind_dir_start = "<name>Wind Direction</name>";
+$nws_wind_dir_end = "</direction>";
+$nws_wind_spd_start = "<name>Wind Speed</name>";
+$nws_wind_spd_end = "</wind-speed>";
+$nws_temp_start = "<name>Temperature</name>";
+$nws_temp_end = "</temperature>";
+$nws_dpt_start = "<name>Dew Point Temperature</name>";
+$nws_dpt_end = "</temperature>";
+$nws_precip_start = "<name>Liquid Precipitation Amount</name>";
+$nws_precip_end = "</precipitation>";
+
+$nws_int = 0;
+$trip1 = 1;
+$trip2 = 0;
+$precip_trip = 0;
+$temp_trip = 0;
+$dpt_trip = 0;
+$wind_spd_trip = 0;
+$wind_dir_trip = 0;
+$q = -1;
+$lf = -1;
+$m = -1;
+$p = -1;
+$tn = -1;
+$d = -1;
+$w = -1;
+$value = "value";
+
+$nws_time_1 = array();
+$nws_date = array();
+$nws_precip = array();
+$nws_sum = array();
+$nws_temp = array();
+$nws_dpt = array();
+$nws_wind_spd = array();
+$nws_wind_dir = array();
+
+$data = file_get_contents($link4);
+$data = explode("\n", $data);
+foreach ($data as $line) {
+    preg_match_all(".$nws_start_time_1.", $line, $id1);
+    $check1 = @$id1[0][0];
+
+    preg_match_all(".$nws_end_time_1.", $line, $id2);
+    $check2 = @$id2[0][0];
+
+    preg_match_all(".$nws_start_time_2.", $line, $id3);
+    $check3 = @$id3[0][0];
+
+    preg_match_all(".$nws_end_time_2.", $line, $id4);
+    $check4 = @$id4[0][0];
+
+    preg_match_all(".$nws_precip_start.", $line, $id5);
+    $check5 = @$id5[0][0];
+
+    preg_match_all(".$nws_precip_end.", $line, $id6);
+    $check6 = @$id6[0][0];
+
+    preg_match_all(".$nws_temp_start.", $line, $id7);
+    $check7 = @$id7[0][0];
+
+    preg_match_all(".$nws_temp_end.", $line, $id8);
+    $check8 = @$id8[0][0];
+
+    preg_match_all(".$nws_dpt_start.", $line, $id9);
+    $check9 = @$id9[0][0];
+
+    preg_match_all(".$nws_dpt_end.", $line, $id10);
+    $check10 = @$id10[0][0];
+
+    preg_match_all(".$nws_wind_spd_start.", $line, $id11);
+    $check11 = @$id11[0][0];
+
+    preg_match_all(".$nws_wind_spd_end.", $line, $id12);
+    $check12 = @$id12[0][0];
+
+    preg_match_all(".$nws_wind_dir_start.", $line, $id13);
+    $check13 = @$id13[0][0];
+
+    preg_match_all(".$nws_wind_dir_end.", $line, $id14);
+    $check14 = @$id14[0][0];
+
+    preg_match_all(".$value.", $line, $id15);
+    $check15 = @$id15[0][0];
+
+    if ($check2 == $nws_end_time_1) {
+        $trip1 = 0;
+    }
+
+    //get nws precip time
+    if ($check4 == $nws_end_time_2) {
+        $trip2 = $trip2 + 1;
+    }
+    if ($check3 == $nws_start_time_2 && $trip2 == 1) {
+        $q++;
+        $get_t_1 = explode(">", trim($line));
+        $get_t_2 = explode("-", trim($get_t_1[1]));
+        $t_array = array($get_t_2[0], $get_t_2[1], $get_t_2[2]);
+        $get_t = implode("-", $t_array);
+        $nws_time_2[$q] = strtotime($get_t) + 21600;
+    }
+
+    //get nws precip
+    if ($check5 == $nws_precip_start) {
+        $precip_trip = 1;
+    }
+
+    if ($check6 == $nws_precip_end) {
+        $precip_trip = 0;
+    }
+    if ($check15 == $value && $precip_trip == 1) {
+        $p++;
+        $get_nws_t1 = explode(">", trim($line));
+        $get_nws_t2 = explode("<", $get_nws_t1[1]);
+        $nws_precip[$p] = "" . $get_nws_t2[0] . " in.";
+        $nws_precip2[$p] = $get_nws_t2[0];
+        $add_nws_precip[$p] = array_sum($nws_precip2);
+        $nws_sum[$p] = "" . $add_nws_precip[$p] . " in.";
+        $p++;
+        $nws_precip[$p] = "" . $get_nws_t2[0] . " in.";
+        $nws_sum[$p] = "" . $add_nws_precip[$p - 1] . " in.";
+    }
+
+
+    //get nws time 1
+    if ($check1 == $nws_start_time_1 && $trip1 == 1) {
+        $lf++;
+        $get_t_1 = explode(">", trim($line));
+        $get_t_2 = explode("<", trim($get_t_1[1]));
+        $get_t = $get_t_2[0];
+        $nws_time_1[$lf] = strtotime($get_t);
+        if ((@$nws_time_1[$lf] - @$nws_time_1[$lf - 1]) == 10800) {
+            $nws_int++;
+        }
+        $nws_mon = date('m', $nws_time_1[$lf]);
+        $nws_day = date('d', $nws_time_1[$lf]);
+        $nws_hr = date('H', $nws_time_1[$lf]);
+        $nws_date[$lf] = "" . $nws_mon . "/" . $nws_day . " @ " . $nws_hr . "z";
+        $nws_precip[$lf] = "-";
+        $nws_sum[$lf] = "-";
+    }
+
+    //get nws temp
+    if ($check7 == $nws_temp_start) {
+        $temp_trip = 1;
+    }
+    if ($check8 == $nws_temp_end) {
+        $temp_trip = 0;
+    }
+    if ($check15 == $value && $temp_trip == 1) {
+        $tn++;
+        $get_nws_t1 = explode(">", trim($line));
+        $get_nws_t2 = explode("<", $get_nws_t1[1]);
+        $nws_temp[$tn] = "" . $get_nws_t2[0] . " F";
+    }
+
+    //get nws dewpoint  
+    if ($check9 == $nws_dpt_start) {
+        $dpt_trip = 1;
+    }
+    if ($check10 == $nws_dpt_end) {
+        $dpt_trip = 0;
+    }
+    if ($check15 == $value && $dpt_trip == 1) {
+        $d++;
+        $get_nws_t1 = explode(">", trim($line));
+        $get_nws_t2 = explode("<", $get_nws_t1[1]);
+        $nws_dpt[$d] = "" . $get_nws_t2[0] . " F";
+    }
+
+    //get nws wind speed
+    if ($check11 == $nws_wind_spd_start) {
+        $wind_spd_trip = 1;
+    }
+    if ($check12 == $nws_wind_spd_end) {
+        $wind_spd_trip = 0;
+    }
+    if ($check15 == $value && $wind_spd_trip == 1) {
+        $w++;
+        $get_nws_t1 = explode(">", trim($line));
+        $get_nws_t2 = explode("<", $get_nws_t1[1]);
+        $nws_wind_spd[$w] = "" . $get_nws_t2[0] . " mph";
+    }
+
+    //get nws wind direction
+    if ($check13 == $nws_wind_dir_start) {
+        $wind_dir_trip = 1;
+    }
+    if ($check14 == $nws_wind_dir_end) {
+        $wind_dir_trip = 0;
+    }
+    if ($check15 == $value && $wind_dir_trip == 1) {
+        $m++;
+        $get_nws_t1 = explode(">", trim($line));
+        $get_nws_t2 = explode("<", $get_nws_t1[1]);
+        $nws_wind_dir[$m] = get_wind_dir($get_nws_t2[0]);
+    }
+}
+
+/**
+ * Compute the "apparent temperature" used for MOS output, considering wind chill and heat index effects.
+ *
+ * @param float $tempF The air temperature in degrees Fahrenheit
+ * @param float $dptF The dew point temperature in degrees Fahrenheit
+ * @param float $rawWind The wind speed in mph
+ * @return float The computed apparent temperature in degrees Fahrenheit
+ */
+function mos_hiwc($tempF, $dptF, $rawWind)
+{
+    $tempC = ($tempF - 32) * (5 / 9);
+    $dptC = ($dptF - 32) * (5 / 9);
+    $rh = 100 * (exp(((1 / ($dptC + 273.15)) - (1 / ($tempC + 273.15))) / (-461.495 / 2500000)));
+    if ($tempF >= 80 && $dptC >= 12) {
+        return -42.379 + (2.04901523 * $tempF) + (10.14333127 * $rh) + (-0.22475541 * $tempF * $rh) + (-0.00683783 * $tempF * $tempF) + (-0.05481717 * $rh * $rh) + (0.00122874 * $tempF * $tempF * $rh) + (0.00085282 * $tempF * $rh * $rh) + (-0.00000199 * $tempF * $tempF * $rh * $rh);
+    } elseif ($tempF > 50 || $rawWind == 0) {
+        return $tempF;
+    }
+    return 35.74 + (0.6215 * $tempF) - (35.75 * pow($rawWind, 0.16)) + ((0.4275 * $tempF) * pow($rawWind, 0.16));
+}
+
+//start of MOS fetching
+// MOS data
+$mos_models = array(
+    array("prefix" => "nam_mos", "time_src" => $nam_time, "query_model" => "NAM"),
+    array("prefix" => "gfs_mos", "time_src" => $gfs_time, "query_model" => "GFS"),
+    array("prefix" => "gfsm_mos", "time_src" => $gfsm_time, "query_model" => "GFS"),
+);
+foreach ($mos_models as $mos) {
+    $prefix = $mos["prefix"];
+    $time_src = $mos["time_src"];
+    $mos_year = @date('Y', $time_src[0]);
+    $mos_mon = @date('m', $time_src[0]);
+    $mos_day = @date('d', $time_src[0]);
+    $mos_h = @date('H', $time_src[0]);
+    ${$prefix . "_temp"} = array();
+    ${$prefix . "_dew"} = array();
+    ${$prefix . "_wspd"} = array();
+    ${$prefix . "_wdir"} = array();
+    ${$prefix . "_precip"} = array();
+    ${$prefix . "_snow"} = array();
+    ${$prefix . "_snow_accum"} = array();
+    ${$prefix . "_time"} = array();
+    ${$prefix . "_hiwc"} = array();
+    ${$prefix . "_wind_x"} = array();
+    ${$prefix . "_wind_y"} = array();
+    ${$prefix . "_wind_dir"} = array();
+    ${$prefix . "_date"} = array();
+    ${$prefix . "_qpf"} = array();
+    ${$prefix . "_qpf_accum"} = array();
+    $mos_time = "" . $mos_year . "-" . $mos_mon . "-" . $mos_day . "%20" . $mos_h . ":00";
+    $link = "https://mesonet.agron.iastate.edu/mos/csv.php?station=" . $ob_station . "&runtime=" . $mos_time . "&model=" . $mos["query_model"];
+
+    $mos_check = ${$prefix . "_check"};
+    $k = -1;
+    $data = file($link);
+    foreach ($data as $line) {
+        $k++;
+        $d = explode(",", trim($line));
+        if ($k >= 1 && $mos_check == 1) {
+            ${$prefix . "_time"}[] = strtotime($d[3]);
+            ${$prefix . "_date"}[] = date("m/d @ H\z", strtotime($d[3]));
+            ${$prefix . "_temp"}[] = "" . $d[5] . " F";
+            ${$prefix . "_dew"}[] = "" . $d[6] . " F";
+            ${$prefix . "_wdir"}[] = $d[8];
+            ${$prefix . "_wspd"}[] = "" . round($d[9] * 1.15077945, 0) . " mph";
+            ${$prefix . "_snow"}[] = $d[16];
+            ${$prefix . "_qpf"}[] = $d[12];
+            ${$prefix . "_wind_x"}[] = cos(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
+            ${$prefix . "_wind_y"}[] = sin(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
+            ${$prefix . "_wind_dir"}[] = get_wind_dir($d[8]);
+            ${$prefix . "_snow_accum"}[] = array_sum(${$prefix . "_snow"});
+            ${$prefix . "_qpf_accum"}[] = array_sum(${$prefix . "_qpf"});
+            ${$prefix . "_hiwc"}[] = mos_hiwc($d[5], $d[6], $d[9]);
+        }
+    }
+}
+
+
+//3-hourly model consensus
+$con_temp = array();
+$con_dew = array();
+$con_ws = array();
+$con_p = array();
+$con_pa = array();
+$con_wd = array();
+$consensus_t = array();
+for ($i = $min; $i <= $max; $i = $i + 10800) {
+    $total_temp = 0;
+    $total_dew = 0;
+    $total_ws = 0;
+    $total_wd = 0;
+    $total_wd_x = 0;
+    $total_wd_y = 0;
+    $total_p = 0;
+    $total_pa = 0;
+    $n = 0;
+    if (in_array($i, $nam_time)) {
+        $n++;
+        $index = array_search($i, $nam_time);
+        @$total_p = $total_p + $nam_var1[$index];
+        @$total_pa = $total_pa + $nam_var2[$index];
+        @$total_temp = $total_temp + $nam_var3[$index];
+        @$total_dew = $total_dew + $nam_var4[$index];
+        @$total_ws = $total_ws + $nam_var5[$index];
+        $total_wd_x = $total_wd_x + $nam_wind_x[$index];
+        $total_wd_y = $total_wd_y + $nam_wind_y[$index];
+    }
+    if (in_array($i, $namm_time)) {
+        $n++;
+        $index = array_search($i, $namm_time);
+        @$total_p = $total_p + $namm_var1[$index];
+        @$total_pa = $total_pa + $namm_var2[$index];
+        @$total_temp = $total_temp + $namm_var3[$index];
+        @$total_dew = $total_dew + $namm_var4[$index];
+        @$total_ws = $total_ws + $namm_var5[$index];
+        $total_wd_x = $total_wd_x + $namm_wind_x[$index];
+        $total_wd_y = $total_wd_y + $namm_wind_y[$index];
+    }
+    if (in_array($i, $gfs_time)) {
+        $n++;
+        $index = array_search($i, $gfs_time);
+        @$total_p = $total_p + $gfs_var1[$index];
+        @$total_pa = $total_pa + $gfs_var2[$index];
+        @$total_temp = $total_temp + $gfs_var3[$index];
+        @$total_dew = $total_dew + $gfs_var4[$index];
+        @$total_ws = $total_ws + $gfs_var5[$index];
+        $total_wd_x = $total_wd_x + $gfs_wind_x[$index];
+        $total_wd_y = $total_wd_y + $gfs_wind_y[$index];
+    }
+    if (in_array($i, $gfsm_time)) {
+        $n++;
+        $index = array_search($i, $gfsm_time);
+        @$total_p = $total_p + $gfsm_var1[$index];
+        @$total_pa = $total_pa + $gfsm_var2[$index];
+        @$total_temp = $total_temp + $gfsm_var3[$index];
+        @$total_dew = $total_dew + $gfsm_var4[$index];
+        @$total_ws = $total_ws + $gfsm_var5[$index];
+        $total_wd_x = $total_wd_x + $gfsm_wind_x[$index];
+        $total_wd_y = $total_wd_y + $gfsm_wind_y[$index];
+    }
+    if (in_array($i, $rap_time)) {
+        $n++;
+        $index = array_search($i, $rap_time);
+        @$total_p = $total_p + $rap_var1[$index];
+        @$total_pa = $total_pa + $rap_var2[$index];
+        @$total_temp = $total_temp + $rap_var3[$index];
+        @$total_dew = $total_dew + $rap_var4[$index];
+        @$total_ws = $total_ws + $rap_var5[$index];
+        $total_wd_x = $total_wd_x + $rap_wind_x[$index];
+        $total_wd_y = $total_wd_y + $rap_wind_y[$index];
+    }
+    if (in_array($i, $nam4km_time)) {
+        $n++;
+        $index = array_search($i, $nam4km_time);
+        @$total_p = $total_p + $nam4km_var1[$index];
+        @$total_pa = $total_pa + $nam4km_var2[$index];
+        @$total_temp = $total_temp + $nam4km_var3[$index];
+        @$total_dew = $total_dew + $nam4km_var4[$index];
+        @$total_ws = $total_ws + $nam4km_var5[$index];
+        $total_wd_x = $total_wd_x + $nam4km_wind_x[$index];
+        $total_wd_y = $total_wd_y + $nam4km_wind_y[$index];
+    }
+    if (in_array($i, $gfs_mos_time)) {
+        $n++;
+        $index = array_search($i, $gfs_mos_time);
+        @$total_temp = $total_temp + $gfs_mos_temp[$index];
+        @$total_dew = $total_dew + $gfs_mos_dew[$index];
+        @$total_ws = $total_ws + $gfs_mos_wspd[$index];
+        $total_wd_x = $total_wd_x + $gfs_mos_wind_x[$index];
+        $total_wd_y = $total_wd_y + $gfs_mos_wind_y[$index];
+    }
+    if (in_array($i, $gfsm_mos_time)) {
+        $n++;
+        $index = array_search($i, $gfsm_mos_time);
+        @$total_temp = $total_temp + $gfsm_mos_temp[$index];
+        @$total_dew = $total_dew + $gfsm_mos_dew[$index];
+        @$total_ws = $total_ws +    $gfsm_mos_wspd[$index];
+        $total_wd_x = $total_wd_x + $gfsm_mos_wind_x[$index];
+        $total_wd_y = $total_wd_y + $gfsm_mos_wind_y[$index];
+    }
+    if (in_array($i, $nam_mos_time)) {
+        $n++;
+        $index = array_search($i, $nam_mos_time);
+        @$total_temp = $total_temp + $nam_mos_temp[$index];
+        @$total_dew = $total_dew + $nam_mos_dew[$index];
+        @$total_ws = $total_ws + $nam_mos_wspd[$index];
+        $total_wd_x = $total_wd_x + $nam_mos_wind_x[$index];
+        $total_wd_y = $total_wd_y + $nam_mos_wind_y[$index];
+    }
+
+    if ($n > 1) {
+        $con_temp[] = round($total_temp / $n, 0);
+        $con_dew[] = round($total_dew / $n, 0);
+        $con_ws[] = round($total_ws / $n, 0);
+        $con_p[] = round($total_p / $n, 2);
+        $con_pa[] = round($total_pa / $n, 2);
+        $total_wind_x = $total_wd_x / $n;
+        $total_wind_y = $total_wd_y / $n;
+        if ($total_wind_x == 0) {
+            $wind_dir = 0;
+        } else {
+            $wind_dir = rad2deg(atan($total_wind_y / $total_wind_x));
+        }
+        if ($total_wind_x < 0 && $total_wind_y > 0) {
+            $wind_dir = $wind_dir + 180;
+        }
+        if ($total_wind_x == 0 && $total_wind_y > 0) {
+            $wind_dir = $wind_dir + 90;
+        } elseif ($total_wind_x < 0 && $total_wind_y <= 0) {
+            $wind_dir = $wind_dir + 180;
+        }
+        $con_wd[] = get_wind_dir(($wind_dir * (-1)) + 270);
+        $consensus_t[] = $i;
+        $con_date[] = date("m/d @ H\z", $i);
+    }
+}
+
+/**
+ * Render the HTML table cells for a single data source's row in the legend.
+ *
+ * @param string $label The label for the data source (e.g., "NAM", "GFS")
+ * @param string|null $date The date string for the row, or null if not applicable
+ * @param array $cols The array of column values to display
+ * @param int $width The width of each table cell (default: 83)
+ * @param bool $bold Whether to render the text in bold (default: false)
+ * @return array An array of HTML table cell strings
+ */
+function render_source_cells($label, $date, $cols, $width = 83, $bold = false)
+{
+    $colors = array("0000FF", "000099", "CC0000", "006600", "000000", "000000");
+    $b1 = $bold ? "<b>" : "";
+    $b2 = $bold ? "</b>" : "";
+    $cells = array("<td width=$width align=center><font color=000000>" . $b1 . $label . $b2 . "</font></td>");
+    if ($date === null) {
+        for ($c = 0; $c < 7; $c++) {
+            $cells[] = "<td width=$width align=center></td>";
+        }
+        return $cells;
+    }
+    $cells[] = "<td width=$width align=center><font color=000000>" . $b1 . $date . $b2 . "</font></td>";
+    foreach ($cols as $c => $val) {
+        $cells[] = "<td width=$width align=center><font color=" . $colors[$c] . ">" . $b1 . $val . $b2 . "</font></td>";
+    }
+    return $cells;
+}
+
+/**
+ * Append a unit string to each value in an array.
+ *
+ * @param array $values The array of values to which the unit should be appended
+ * @param string $unit The unit string to append
+ * @return array The array of values with the unit appended
+ */
+function append_unit($values, $unit)
+{
+    $out = array();
+    foreach ($values as $v) {
+        $out[] = $v . $unit;
+    }
+    return $out;
+}
+
+$dashes = function ($count) {
+    return array_fill(0, $count, "-");
+};
+
+// One entry per legend row-source, in the exact order columns are rendered
+$sources = array(
+    "nam" => array(
+        "check" => $nam_check,
+        "times" => $nam_time,
+        "label" => $nam_init . "z NAM",
+        "dates" => $nam_date,
+        "cols" => array($nam_var1, $nam_var2, $nam_var3, $nam_var4, $nam_var5, $nam_var6)
+    ),
+    "namm" => array(
+        "check" => $namm_check,
+        "times" => $namm_time,
+        "label" => $namm_init . "z NAM",
+        "dates" => $namm_date,
+        "cols" => array($namm_var1, $namm_var2, $namm_var3, $namm_var4, $namm_var5, $namm_var6)
+    ),
+    "nam4km" => array(
+        "check" => $nam4km_check,
+        "times" => $nam4km_time,
+        "label" => $nam4km_init . "z NAM 4km",
+        "dates" => $nam4km_date,
+        "cols" => array($nam4km_var1, $nam4km_var2, $nam4km_var3, $nam4km_var4, $nam4km_var5, $nam4km_var6)
+    ),
+    "gfs" => array(
+        "check" => $gfs_check,
+        "times" => $gfs_time,
+        "label" => $gfs_init . "z GFS",
+        "dates" => $gfs_date,
+        "cols" => array($gfs_var1, $gfs_var2, $gfs_var3, $gfs_var4, $gfs_var5, $gfs_var6)
+    ),
+    "gfsm" => array(
+        "check" => $gfsm_check,
+        "times" => $gfsm_time,
+        "label" => $gfsm_init . "z GFS",
+        "dates" => $gfsm_date,
+        "cols" => array($gfsm_var1, $gfsm_var2, $gfsm_var3, $gfsm_var4, $gfsm_var5, $gfsm_var6)
+    ),
+    "rap" => array(
+        "check" => $rap_check,
+        "times" => $rap_time,
+        "label" => $rap_init . ($date >= 2012050100 ? "z RAP" : "z RUC"),
+        "dates" => $rap_date,
+        "cols" => array($rap_var1, $rap_var2, $rap_var3, $rap_var4, $rap_var5, $rap_var6)
+    ),
+    "nam_mos" => array(
+        "check" => $nam_mos_check,
+        "times" => $nam_mos_time,
+        "label" => $nam_init . "z NAM MOS",
+        "dates" => $nam_mos_date,
+        "cols" => array($dashes(count($nam_mos_time)), $dashes(count($nam_mos_time)), $nam_mos_temp, $nam_mos_dew, $nam_mos_wspd, $nam_mos_wind_dir)
+    ),
+    "gfs_mos" => array(
+        "check" => $gfs_mos_check,
+        "times" => $gfs_mos_time,
+        "label" => $gfs_init . "z GFS MOS",
+        "dates" => $gfs_mos_date,
+        "cols" => array($dashes(count($gfs_mos_time)), $dashes(count($gfs_mos_time)), $gfs_mos_temp, $gfs_mos_dew, $gfs_mos_wspd, $gfs_mos_wind_dir)
+    ),
+    "gfsm_mos" => array(
+        "check" => $gfsm_mos_check,
+        "times" => $gfsm_mos_time,
+        "label" => $gfsm_init . "z GFS MOS",
+        "dates" => $gfsm_mos_date,
+        "cols" => array($dashes(count($gfsm_mos_time)), $dashes(count($gfsm_mos_time)), $gfsm_mos_temp, $gfsm_mos_dew, $gfsm_mos_wspd, $gfsm_mos_wind_dir)
+    ),
+    "con" => array(
+        "check" => $con_check,
+        "times" => $consensus_t,
+        "label" => "Model Average",
+        "bold" => true,
+        "width" => 90,
+        "dates" => $con_date,
+        "cols" => array(
+            append_unit($con_p, " in."),
+            append_unit($con_pa, " in."),
+            append_unit($con_temp, " F"),
+            append_unit($con_dew, " F"),
+            append_unit($con_ws, " mph"),
+            $con_wd,
+        )
+    ),
+    "nws" => array(
+        "check" => $nws_check,
+        "times" => $nws_time_1,
+        "label" => "NWS",
+        "dates" => $nws_date,
+        "cols" => array($nws_precip, $nws_sum, $nws_temp, $nws_dpt, $nws_wind_spd, $nws_wind_dir)
+    ),
+    "obs" => array(
+        "check" => $obs_check,
+        "times" => $obs_time,
+        "label" => "OBS - " . $ob_station,
+        "dates" => $obs_date,
+        "cols" => array($obs_precip, $obs_precip_accum, $obs_temp, $obs_dew, $obs_wspd, $obs_wdir)
+    ),
+);
+
+$row_titles = array(
+    "<u>Model:</u>",
+    "<u>Day/Time:</u>",
+    "<u>QPF:</u>",
+    "<u>Total QPF:</u>",
+    "<u>2m Temp:</u>",
+    "<u>2m Dewp:</u>",
+    "<u>10m W-Spd:</u>",
+    "<u>10m W-Dir:</u>",
+);
+
+$cell_state = array();
+foreach ($sources as $key => $src) {
+    $cell_state[$key] = array_fill(0, 8, "");
+}
+
+$ul = 61;
+$ur = 41;
+$lr = 64;
+$ll = 359;
+$ul1 = $ul;
+$lr1 = $lr;
+
+$mapdata = "";
+
+$model_count = ($max - $min) / 3600;
+for ($i = $min; $i <= $max; $i = $i + 3600) {
+    foreach ($sources as $key => $src) {
+        if ($src["check"] != 1) {
+            continue;
+        }
+        $times = $src["times"];
+        $width = isset($src["width"]) ? $src["width"] : 83;
+        $bold = isset($src["bold"]) ? $src["bold"] : false;
+        if (in_array($i, $times)) {
+            $index = array_search($i, $times);
+            $cols_vals = array();
+            foreach ($src["cols"] as $col_arr) {
+                $cols_vals[] = $col_arr[$index];
+            }
+            $cell_state[$key] = render_source_cells($src["label"], $src["dates"][$index], $cols_vals, $width, $bold);
+        } elseif (!empty($times) && ($i < min($times) || $i > max($times))) {
+            $cell_state[$key] = render_source_cells($src["label"], null, null, $width, $bold);
+        }
+    }
+
+    $string_begin = "<area shape=rect coords=" . $ul . "," . $ur . "," . $lr . "," . $ll . " onMouseOver=\"writeText('";
+    $string_end = "'); setMouse(this); \" />\n";
+
+    $table_html = "<table border=0 cellspacing=0 cellpadding=0>";
+    foreach ($row_titles as $r => $title) {
+        $td_attr = ($r == 0) ? " width=62" : "";
+        $table_html .= "<tr><td$td_attr>" . $title . "</td>";
+        foreach ($sources as $key => $src) {
+            $table_html .= $cell_state[$key][$r];
+        }
+        $table_html .= "</tr>";
+    }
+    $table_html .= "</table>";
+
+    $mapdata .= "" . $string_begin . $table_html . $string_end . "";
+
+    $ul1 = $lr + 1;
+    $lr1 = $lr1 + (899 / ($model_count));
+
+    $ul = round(($ul1), 0);
+    $lr = round(($lr1), 0);
+}
 
 ?>
-
 <html>
 
 <head>
@@ -154,28 +1177,7 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
         <table class="menus">
             <tr>
                 <td valign="top" align="left">
-
-                    <?php
-
-                    $var_set1 = "nam=" . $nam_check . "&namm=" . $namm_check . "&rrfs=". $rrfs_check . "&nam4km=" . $nam4km_check . "&gfs=" . $gfs_check . "&gfsm=" . $gfsm_check . "&rap=" . $rap_check . "&nam_mos=" . $nam_mos_check . "&gfs_mos=" . $gfs_mos_check . "&gfsm_mos=" . $gfsm_mos_check . "&nws=" . $nws_check . "&obs=" . $obs_check . "&con=" . $con_check . "";
-                    $var_set2 = "max_t=" . $max_t_check . "&cobb=" . $cobb_check . "&compaction=" . $compaction_check . "&ratio=" . $ratio . "";
-                    $var_set3 = "mean_mt=" . $mean_mt_check . "&max_mt=" . $max_mt_check . "&mean=" . $mean_check . "";
-                    if ($archive_check == 1) {
-                        $var_set1 = "" . $var_set1 . "&date=" . $date . "";
-                    }
-
-                    echo "<p>\n<img src=\"images/plotter.php?site=" . $site_l . "&var=snow_accum&" . $var_set1 . "&" . $var_set2 . "\" alt=\"snow accumulation plot\" usemap=\"#precip\" border=\"0\">\n</p>\n";
-                    echo "<p>\n<img src=\"images/plotter.php?site=" . $site_l . "&var=qpf_accum&" . $var_set1 . "\" alt=\"precip accumulation plot\" usemap=\"#precip\" border=\"0\">\n</p>\n";
-                    echo "<p>\n<img src=\"images/plotter.php?site=" . $site_l . "&var=tf&" . $var_set1 . "\" alt=\"temperature plot\" usemap=\"#precip\" border=\"0\">\n</p>\n";
-                    echo "<p>\n<img src=\"images/plotter.php?site=" . $site_l . "&var=hiwc&" . $var_set1 . "\" alt=\"apparent temp plot\" usemap=\"#precip\" border=\"0\">\n</p>\n";
-                    echo "<p>\n<img src=\"images/plotter.php?site=" . $site_l . "&var=td&" . $var_set1 . "\" alt=\"dewpoint plot\" usemap=\"#precip\" border=\"0\">\n</p>\n";
-                    echo "<p>\n<img src=\"images/plotter.php?site=" . $site_l . "&var=wind&" . $var_set1 . "&" . $var_set3 . "\" alt=\"wind speed plot\" usemap=\"#precip\" border=\"0\">\n</p>\n";
-                    echo "<p>\n<img src=\"images/plotter.php?site=" . $site_l . "&var=wdir&" . $var_set1 . "\" alt=\"wind direction plot\" usemap=\"#precip\" border=\"0\">\n</p>\n";
-                    echo "<p>\n<img src=\"images/plotter.php?site=" . $site_l . "&var=frz_rain&" . $var_set1 . "\" alt=\"freezing rain plot\" usemap=\"#precip\" border=\"0\">\n</p>\n";
-                    echo "<p>\n<img src=\"images/plotter.php?site=" . $site_l . "&var=sleet&" . $var_set1 . "\" alt=\"sleet plot\" usemap=\"#precip\" border=\"0\">\n</p>\n";
-
-                    ?>
-
+                    <?php echo $image_html; ?>
                 </td>
             </tr>
         </table>
@@ -419,928 +1421,9 @@ bufkit, bufget, use bufkit, bufkit archive, meteogram, generator">
         </table>
     </div>
 
-
-    <?php
-
-    /**
-     * Get the wind direction from the wind angle
-     * @param float $cam_ang The wind angle in degrees
-     * @return string The wind direction as a compass point
-     */
-    function get_wind_dir($cam_ang)
-    {
-        $dir = "N";
-        if (11 < $cam_ang && $cam_ang <= 34) {
-            $dir = "NNE";
-        } elseif (34 < $cam_ang && $cam_ang <= 45) {
-            $dir = "NE";
-        } elseif (45 < $cam_ang && $cam_ang <= 56) {
-            $dir = "NE";
-        } elseif (56 < $cam_ang && $cam_ang <= 79) {
-            $dir = "ENE";
-        } elseif (79 < $cam_ang && $cam_ang <= 101) {
-            $dir = "E";
-        } elseif (101 < $cam_ang && $cam_ang <= 124) {
-            $dir = "ESE";
-        } elseif (124 < $cam_ang && $cam_ang <= 135) {
-            $dir = "SE";
-        } elseif (135 < $cam_ang && $cam_ang <= 146) {
-            $dir = "SE";
-        } elseif (146 < $cam_ang && $cam_ang <= 169) {
-            $dir = "SSE";
-        } elseif (169 < $cam_ang && $cam_ang <= 191) {
-            $dir = "S";
-        } elseif (191 < $cam_ang && $cam_ang <= 214) {
-            $dir = "SSW";
-        } elseif (214 < $cam_ang && $cam_ang <= 225) {
-            $dir = "SW";
-        } elseif (225 < $cam_ang && $cam_ang <= 236) {
-            $dir = "SW";
-        } elseif (236 < $cam_ang && $cam_ang <= 259) {
-            $dir = "WSW";
-        } elseif (259 < $cam_ang && $cam_ang <= 281) {
-            $dir = "W";
-        } elseif (281 < $cam_ang && $cam_ang <= 304) {
-            $dir = "WNW";
-        } elseif (304 < $cam_ang && $cam_ang <= 315) {
-            $dir = "NW";
-        } elseif (315 < $cam_ang && $cam_ang <= 326) {
-            $dir = "NW";
-        } elseif (326 < $cam_ang && $cam_ang <= 349) {
-            $dir = "NNW";
-        } elseif (349 < $cam_ang && $cam_ang <= 360) {
-            $dir = "N";
-        }
-        return $dir;
-    }
-
-
-    // check if site is in master list.  If not, terminate script and tell user
-    $found = 0;
-    $sites = array();
-    for ($z = 0; $z <= 1; $z++) {
-        if ($z == 0) {
-            $master_list = "images/nam_bufrstations.txt";
-        } elseif ($z == 1) {
-            $master_list = "images/gfs3_bufrstations.txt";
-        }
-        $data = file($master_list);
-        foreach ($data as $line) {
-            $d = explode(" ", trim(preg_replace('/\s+/', ' ', $line)));
-            $sites[] = strtolower($d[3]);
-            if ($site == strtolower($d[3])) {
-                $found = 1;
-                if ($z == 0) {
-                    if ($site == "kaus") {
-                        $lat = $d[1] - 0.1;
-                        $lon = $d[2];
-                    } else {
-                        $lat = $d[1];
-                        $lon = $d[2];
-                    }
-                } elseif ($z == 1) {
-                    if (strpbrk($d[1], "N")) {
-                        $lat = trim($d[1], "N");
-                    } else {
-                        $lat = trim($d[1], "S") * -1;
-                    }
-                    if (strpbrk($d[2], "E")) {
-                        $lon = trim($d[2], "E");
-                    } else {
-                        $lon = trim($d[2], "W") * -1;
-                    }
-                }
-                break;
-            }
-        }
-        if ($found == 1) {
-            break;
-        }
-    }
-    if (!(in_array($site, $sites))) {
-        die("Site " . $site . " is not available.  Try again.");
-    }
-
-    $var1 = "qpf";
-    $var2 = "qpf_accum";
-    $var3 = "tf";
-    $var4 = "td";
-    $var5 = "wspd";
-    $var6 = "wdir";
-    $var7 = "uwnd";
-    $var8 = "vwnd";
-
-    /**
-     * Compute the archive-mode `date=` query param passed to data/parser.php per model
-     *
-     * @param string $mdl The model name (e.g., "nam", "gfs", "rap")
-     * @param int $archive_check Flag indicating if archive mode is active (1 for archive mode)
-     * @param int $year The year component of the date
-     * @param int $month The month component of the date
-     * @param int $day The day component of the date
-     * @param int $hour The hour component of the date
-     * @return string|null The computed parse date string or null if not applicable
-     */
-    function compute_model_parse_date($mdl, $archive_check, $year, $month, $day, $hour)
-    {
-        if ($mdl == "rap") {
-            return "" . $year . "" . $month . "" . $day . "" . $hour . "";
-        }
-        if ($archive_check != 1) {
-            return null;
-        }
-        if (in_array($mdl, array("nam", "gfs", "nam4km"))) {
-            if ($hour >= 0 && $hour <= 11) {
-                return "" . $year . "" . $month . "" . $day . "00";
-            }
-            return "" . $year . "" . $month . "" . $day . "12";
-        }
-        // namm, gfsm
-        if ($hour >= 0 && $hour <= 5) {
-            $temp_date = strtotime("" . $year . "-" . $month . "-" . $day . " 00:00:00") - 21600;
-            return date("YmdH", $temp_date);
-        } elseif ($hour >= 6 && $hour <= 17) {
-            return "" . $year . "" . $month . "" . $day . "06";
-        }
-        return "" . $year . "" . $month . "" . $day . "18";
-    }
-
-    $model_prefixes = array("nam", "namm", "gfs", "gfsm", "rap", "nam4km");
-    foreach ($model_prefixes as $mdl) {
-        $var1_out = array();
-        $var2_out = array();
-        $var3_out = array();
-        $var4_out = array();
-        $var5_out = array();
-        $var6_out = array();
-        $date_out = array();
-        $time_out = array();
-        $wind_x_out = array();
-        $wind_y_out = array();
-        $init_out = null;
-        $init_date_out = null;
-
-        $parse_date = compute_model_parse_date($mdl, $archive_check, $year, $month, $day, $hour);
-        if ($archive_check != 1) {
-            $link = ROOTURL . "data/parser.php?model=" . $mdl . "&site=" . $site_l . "";
-        } else {
-            $link = ROOTURL . "data/parser.php?model=" . $mdl . "&site=" . $site_l . "&date=" . $parse_date . "";
-        }
-        $data = file_get_contents($link);
-        $z2 = 0;
-        if ($data !== False) {
-            foreach (explode("\n", $data) as $line) {
-                $d = explode("\t", trim($line));
-                $z2++;
-                if ($z2 == 1) {
-                    if (array_search($var1, $d)) {
-                        $index1 = array_search($var1, $d);
-                    } else {
-                        continue;
-                    }
-                    if (array_search($var2, $d)) {
-                        $index2 = array_search($var2, $d);
-                    } else {
-                        continue;
-                    }
-                    if (array_search($var3, $d)) {
-                        $index3 = array_search($var3, $d);
-                    } else {
-                        continue;
-                    }
-                    if (array_search($var4, $d)) {
-                        $index4 = array_search($var4, $d);
-                    } else {
-                        continue;
-                    }
-                    if (array_search($var5, $d)) {
-                        $index5 = array_search($var5, $d);
-                    } else {
-                        continue;
-                    }
-                    if (array_search($var6, $d)) {
-                        $index6 = array_search($var6, $d);
-                    } else {
-                        continue;
-                    }
-                    if (array_search($var7, $d)) {
-                        $index7 = array_search($var7, $d);
-                    } else {
-                        continue;
-                    }
-                    if (array_search($var8, $d)) {
-                        $index8 = array_search($var8, $d);
-                    } else {
-                        continue;
-                    }
-                } else {
-                    $mod_time = strtotime($d[1]);
-                    $var1_out[] = "" . round($d[$index1], 2) . " in.";
-                    $var2_out[] = "" . round($d[$index2], 2) . " in.";
-                    $var3_out[] = "" . round($d[$index3], 0) . " F";
-                    $var4_out[] = "" . round($d[$index4], 0) . " F";
-                    $var5_out[] = "" . round($d[$index5], 0) . " mph";
-                    $var6_out[] = get_wind_dir($d[$index6]);
-                    $time_out[] = $mod_time;
-                    $date_out[] = date("m/d @ H\z", $mod_time);
-                    $wind_x_out[] = $d[$index7];
-                    $wind_y_out[] = $d[$index8];
-                    if ($z2 == 2) {
-                        $init_out = ($mdl == "nam4km") ? date("H", $mod_time - 3600) : date("H", $mod_time);
-                        if ($mdl == "gfs" || $mdl == "gfsm") {
-                            $init_date_out = date("YmdH", $mod_time);
-                        }
-                    }
-                }
-            }
-        }
-
-        ${$mdl . "_var1"} = $var1_out;
-        ${$mdl . "_var2"} = $var2_out;
-        ${$mdl . "_var3"} = $var3_out;
-        ${$mdl . "_var4"} = $var4_out;
-        ${$mdl . "_var5"} = $var5_out;
-        ${$mdl . "_var6"} = $var6_out;
-        ${$mdl . "_date"} = $date_out;
-        ${$mdl . "_time"} = $time_out;
-        ${$mdl . "_wind_x"} = $wind_x_out;
-        ${$mdl . "_wind_y"} = $wind_y_out;
-        ${$mdl . "_init"} = $init_out;
-        if ($init_date_out !== null) {
-            ${$mdl . "_init_date"} = $init_date_out;
-        }
-    }
-
-    // Determine the overall min/max forecast time across whichever models returned data,
-    // instead of relying solely on gfs/gfsm (which could both be empty and left $min/$max unset).
-    $time_bounds = array();
-    foreach (array($gfs_time, $gfsm_time, $nam_time, $namm_time, $rap_time, $nam4km_time) as $t) {
-        if (!empty($t)) {
-            $time_bounds[] = array($t[0], $t[count($t) - 1]);
-        }
-    }
-    if (!empty($time_bounds)) {
-        $min = min(array_column($time_bounds, 0));
-        $max = max(array_column($time_bounds, 1));
-    } else {
-        $min = time();
-        $max = time();
-    }
-    $diff = ($max - $min) / 3600;
-    if ($archive_check == 1) {
-        $link = "https://mesonet.agron.iastate.edu/request/asos/csv.php?lat=" . $lat . "&lon=" . $lon . "&date=" . date("Y-m-d", $min) . "";
-    } else {
-        $link = "https://mesonet.agron.iastate.edu/request/asos/csv.php?lat=" . $lat . "&lon=" . $lon . "";
-    }
-    $obs_time = array();
-    $obs_temp = array();
-    $obs_dew = array();
-    $obs_wspd = array();
-    $obs_wdir = array();
-    $obs_precip = array();
-    $obs_precip_accum = array();
-    $obs_date = array();
-    $ob_station = "";
-    $z = 0;
-    $kf = -1;
-    $data = file($link);
-    $oHourLast = -99;
-    foreach ($data as $line) {
-        $z++;
-        if ($z > 1) {
-            $d = explode(",", trim($line));
-            $ob_time = strtotime("" . $d[1] . "Z");
-            $minute = date("i", $ob_time);
-            $oHour = date("H", $ob_time);
-            if ($ob_time >= ($min - 3600) && $d[2] != -99 && $minute >= 45 && $minute <= 56 && $oHour != $oHourLast) {
-                $kf++;
-                $obs_lat = $d[10];
-                $obs_lon = $d[9];
-                $lat_diff = abs($lat - $obs_lat);
-                $lon_diff = abs($lon - $obs_lon);
-                if ($lat_diff > 1 || $lon_diff > 1) {
-                    break;
-                }
-                if (strlen($d[0]) == 3) {
-                    $ob_station = "K" . $d[0] . "";
-                } else {
-                    $ob_station = $d[0];
-                }
-                $obs_time1[] = $ob_time;
-                $ob_time2 = $ob_time + 3600;
-                $obs_time[] = strtotime(date("Y-m-d H:00:00", $ob_time2));
-                if (is_numeric($d[2])) {
-                    $obs_temp[] = "" . round($d[2], 1) . " F";
-                } else {
-                    $obs_temp[] = "M";
-                }
-                if (is_numeric($d[3])) {
-                    $obs_dew[] = "" . round($d[3], 1) . " F";
-                } else {
-                    $obs_dew[] = "M";
-                }
-                $obs_wspd[] = "" . round($d[4] * 1.15077945, 0) . " mph";
-                $obs_wdir[] = get_wind_dir($d[5]);
-                $obs_precip[] = "" . round($d[6], 2) . " in.";
-                $obs_precip_accum[] = "" . round(array_sum($obs_precip), 2) . " in.";
-                $obs_date[] = date("m/d @ H\z", $ob_time2);
-                $oHourLast = $oHour;
-            }
-        }
-    }
-
-    $init_year = date('Y', $min);
-    $init_mon = date('m', $min);
-    $init_day = date('d', $min);
-    $init_h = date('H', $min);
-    $end_year = date('Y', $max);
-    $end_mon = date('m', $max);
-    $end_day = date('d', $max);
-    $end_h = date('H', $max);
-
-    $init_time =  "" . $init_year . "-" . $init_mon . "-" . $init_day . "T" . $init_h . "";
-    $end_time =  "" . $end_year . "-" . $end_mon . "-" . $end_day . "T" . $end_h . "";
-
-    $link4_1 = "https://graphical.weather.gov/xml/SOAP_server/ndfdXMLclient.php?whichClient=NDFDgen&lat=" . $lat . "&lon=" . $lon . "&listLatLon=&lat1=&lon1=&lat2=&lon2=&resolutionSub=&listLat1=&listLon1=";
-    $link4_2 = "&listLat2=&listLon2=&resolutionList=&endPoint1Lat=&endPoint1Lon=&endPoint2Lat=&endPoint2Lon=&listEndPoint1Lat=&listEndPoint1Lon=&listEndPoint2Lat=&listEndPoint2Lon=&zipCodeList=";
-    $link4_3 = "&listZipCodeList=&centerPointLat=&centerPointLon=&distanceLat=&distanceLon=&resolutionSquare=&listCenterPointLat=&listCenterPointLon=&listDistanceLat=&listDistanceLon=";
-    $link4_4 = "&listResolutionSquare=&citiesLevel=&listCitiesLevel=&sector=&gmlListLatLon=&featureType=&requestedTime=&startTime=&endTime=&compType=&propertyName=";
-    $link4_5 = "&product=time-series&begin=" . $init_time . "%3A00%3A00&end=" . $end_time . "%3A00%3A00&temp=temp&qpf=qpf&dew=dew&wspd=wspd&wdir=wdir&Submit=Submit";
-    $link4 = "" . $link4_1 . "" . $link4_2 . "" . $link4_3 . "" . $link4_4 . "" . $link4_5 . "";
-
-    $nws_start_time_1 = "start-valid-time";
-    $nws_end_time_1 = "/time-layout";
-    $nws_start_time_2 = "end-valid-time";
-    $nws_end_time_2 = "/time-layout";
-    $nws_wind_dir_start = "<name>Wind Direction</name>";
-    $nws_wind_dir_end = "</direction>";
-    $nws_wind_spd_start = "<name>Wind Speed</name>";
-    $nws_wind_spd_end = "</wind-speed>";
-    $nws_temp_start = "<name>Temperature</name>";
-    $nws_temp_end = "</temperature>";
-    $nws_dpt_start = "<name>Dew Point Temperature</name>";
-    $nws_dpt_end = "</temperature>";
-    $nws_precip_start = "<name>Liquid Precipitation Amount</name>";
-    $nws_precip_end = "</precipitation>";
-
-    $nws_int = 0;
-    $trip1 = 1;
-    $trip2 = 0;
-    $precip_trip = 0;
-    $temp_trip = 0;
-    $dpt_trip = 0;
-    $wind_spd_trip = 0;
-    $wind_dir_trip = 0;
-    $q = -1;
-    $lf = -1;
-    $m = -1;
-    $p = -1;
-    $tn = -1;
-    $d = -1;
-    $w = -1;
-    $value = "value";
-
-    $nws_time_1 = array();
-    $nws_date = array();
-    $nws_precip = array();
-    $nws_sum = array();
-    $nws_temp = array();
-    $nws_dpt = array();
-    $nws_wind_spd = array();
-    $nws_wind_dir = array();
-
-    $data = file_get_contents($link4);
-    $data = explode("\n", $data);
-    foreach ($data as $line) {
-        preg_match_all(".$nws_start_time_1.", $line, $id1);
-        $check1 = @$id1[0][0];
-
-        preg_match_all(".$nws_end_time_1.", $line, $id2);
-        $check2 = @$id2[0][0];
-
-        preg_match_all(".$nws_start_time_2.", $line, $id3);
-        $check3 = @$id3[0][0];
-
-        preg_match_all(".$nws_end_time_2.", $line, $id4);
-        $check4 = @$id4[0][0];
-
-        preg_match_all(".$nws_precip_start.", $line, $id5);
-        $check5 = @$id5[0][0];
-
-        preg_match_all(".$nws_precip_end.", $line, $id6);
-        $check6 = @$id6[0][0];
-
-        preg_match_all(".$nws_temp_start.", $line, $id7);
-        $check7 = @$id7[0][0];
-
-        preg_match_all(".$nws_temp_end.", $line, $id8);
-        $check8 = @$id8[0][0];
-
-        preg_match_all(".$nws_dpt_start.", $line, $id9);
-        $check9 = @$id9[0][0];
-
-        preg_match_all(".$nws_dpt_end.", $line, $id10);
-        $check10 = @$id10[0][0];
-
-        preg_match_all(".$nws_wind_spd_start.", $line, $id11);
-        $check11 = @$id11[0][0];
-
-        preg_match_all(".$nws_wind_spd_end.", $line, $id12);
-        $check12 = @$id12[0][0];
-
-        preg_match_all(".$nws_wind_dir_start.", $line, $id13);
-        $check13 = @$id13[0][0];
-
-        preg_match_all(".$nws_wind_dir_end.", $line, $id14);
-        $check14 = @$id14[0][0];
-
-        preg_match_all(".$value.", $line, $id15);
-        $check15 = @$id15[0][0];
-
-        if ($check2 == $nws_end_time_1) {
-            $trip1 = 0;
-        }
-
-        //get nws precip time
-        if ($check4 == $nws_end_time_2) {
-            $trip2 = $trip2 + 1;
-        }
-        if ($check3 == $nws_start_time_2 && $trip2 == 1) {
-            $q++;
-            $get_t_1 = explode(">", trim($line));
-            $get_t_2 = explode("-", trim($get_t_1[1]));
-            $t_array = array($get_t_2[0], $get_t_2[1], $get_t_2[2]);
-            $get_t = implode("-", $t_array);
-            $nws_time_2[$q] = strtotime($get_t) + 21600;
-        }
-
-        //get nws precip
-        if ($check5 == $nws_precip_start) {
-            $precip_trip = 1;
-        }
-
-        if ($check6 == $nws_precip_end) {
-            $precip_trip = 0;
-        }
-        if ($check15 == $value && $precip_trip == 1) {
-            $p++;
-            $get_nws_t1 = explode(">", trim($line));
-            $get_nws_t2 = explode("<", $get_nws_t1[1]);
-            $nws_precip[$p] = "" . $get_nws_t2[0] . " in.";
-            $nws_precip2[$p] = $get_nws_t2[0];
-            $add_nws_precip[$p] = array_sum($nws_precip2);
-            $nws_sum[$p] = "" . $add_nws_precip[$p] . " in.";
-            $p++;
-            $nws_precip[$p] = "" . $get_nws_t2[0] . " in.";
-            $nws_sum[$p] = "" . $add_nws_precip[$p - 1] . " in.";
-        }
-
-
-        //get nws time 1
-        if ($check1 == $nws_start_time_1 && $trip1 == 1) {
-            $lf++;
-            $get_t_1 = explode(">", trim($line));
-            $get_t_2 = explode("<", trim($get_t_1[1]));
-            $get_t = $get_t_2[0];
-            $nws_time_1[$lf] = strtotime($get_t);
-            if ((@$nws_time_1[$lf] - @$nws_time_1[$lf - 1]) == 10800) {
-                $nws_int++;
-            }
-            $nws_mon = date('m', $nws_time_1[$lf]);
-            $nws_day = date('d', $nws_time_1[$lf]);
-            $nws_hr = date('H', $nws_time_1[$lf]);
-            $nws_date[$lf] = "" . $nws_mon . "/" . $nws_day . " @ " . $nws_hr . "z";
-            $nws_precip[$lf] = "-";
-            $nws_sum[$lf] = "-";
-        }
-
-        //get nws temp
-        if ($check7 == $nws_temp_start) {
-            $temp_trip = 1;
-        }
-        if ($check8 == $nws_temp_end) {
-            $temp_trip = 0;
-        }
-        if ($check15 == $value && $temp_trip == 1) {
-            $tn++;
-            $get_nws_t1 = explode(">", trim($line));
-            $get_nws_t2 = explode("<", $get_nws_t1[1]);
-            $nws_temp[$tn] = "" . $get_nws_t2[0] . " F";
-        }
-
-        //get nws dewpoint  
-        if ($check9 == $nws_dpt_start) {
-            $dpt_trip = 1;
-        }
-        if ($check10 == $nws_dpt_end) {
-            $dpt_trip = 0;
-        }
-        if ($check15 == $value && $dpt_trip == 1) {
-            $d++;
-            $get_nws_t1 = explode(">", trim($line));
-            $get_nws_t2 = explode("<", $get_nws_t1[1]);
-            $nws_dpt[$d] = "" . $get_nws_t2[0] . " F";
-        }
-
-        //get nws wind speed
-        if ($check11 == $nws_wind_spd_start) {
-            $wind_spd_trip = 1;
-        }
-        if ($check12 == $nws_wind_spd_end) {
-            $wind_spd_trip = 0;
-        }
-        if ($check15 == $value && $wind_spd_trip == 1) {
-            $w++;
-            $get_nws_t1 = explode(">", trim($line));
-            $get_nws_t2 = explode("<", $get_nws_t1[1]);
-            $nws_wind_spd[$w] = "" . $get_nws_t2[0] . " mph";
-        }
-
-        //get nws wind direction
-        if ($check13 == $nws_wind_dir_start) {
-            $wind_dir_trip = 1;
-        }
-        if ($check14 == $nws_wind_dir_end) {
-            $wind_dir_trip = 0;
-        }
-        if ($check15 == $value && $wind_dir_trip == 1) {
-            $m++;
-            $get_nws_t1 = explode(">", trim($line));
-            $get_nws_t2 = explode("<", $get_nws_t1[1]);
-            $nws_wind_dir[$m] = get_wind_dir($get_nws_t2[0]);
-        }
-    }
-
-    /**
-     * Compute the "apparent temperature" used for MOS output, considering wind chill and heat index effects.
-     *
-     * @param float $tempF The air temperature in degrees Fahrenheit
-     * @param float $dptF The dew point temperature in degrees Fahrenheit
-     * @param float $rawWind The wind speed in mph
-     * @return float The computed apparent temperature in degrees Fahrenheit
-     */
-    function mos_hiwc($tempF, $dptF, $rawWind)
-    {
-        $tempC = ($tempF - 32) * (5 / 9);
-        $dptC = ($dptF - 32) * (5 / 9);
-        $rh = 100 * (exp(((1 / ($dptC + 273.15)) - (1 / ($tempC + 273.15))) / (-461.495 / 2500000)));
-        if ($tempF >= 80 && $dptC >= 12) {
-            return -42.379 + (2.04901523 * $tempF) + (10.14333127 * $rh) + (-0.22475541 * $tempF * $rh) + (-0.00683783 * $tempF * $tempF) + (-0.05481717 * $rh * $rh) + (0.00122874 * $tempF * $tempF * $rh) + (0.00085282 * $tempF * $rh * $rh) + (-0.00000199 * $tempF * $tempF * $rh * $rh);
-        } elseif ($tempF > 50 || $rawWind == 0) {
-            return $tempF;
-        }
-        return 35.74 + (0.6215 * $tempF) - (35.75 * pow($rawWind, 0.16)) + ((0.4275 * $tempF) * pow($rawWind, 0.16));
-    }
-
-    //start of MOS fetching
-    // MOS data
-    $mos_models = array(
-        array("prefix" => "nam_mos", "time_src" => $nam_time, "query_model" => "NAM"),
-        array("prefix" => "gfs_mos", "time_src" => $gfs_time, "query_model" => "GFS"),
-        array("prefix" => "gfsm_mos", "time_src" => $gfsm_time, "query_model" => "GFS"),
-    );
-    foreach ($mos_models as $mos) {
-        $prefix = $mos["prefix"];
-        $time_src = $mos["time_src"];
-        $mos_year = @date('Y', $time_src[0]);
-        $mos_mon = @date('m', $time_src[0]);
-        $mos_day = @date('d', $time_src[0]);
-        $mos_h = @date('H', $time_src[0]);
-        ${$prefix . "_temp"} = array();
-        ${$prefix . "_dew"} = array();
-        ${$prefix . "_wspd"} = array();
-        ${$prefix . "_wdir"} = array();
-        ${$prefix . "_precip"} = array();
-        ${$prefix . "_snow"} = array();
-        ${$prefix . "_snow_accum"} = array();
-        ${$prefix . "_time"} = array();
-        ${$prefix . "_hiwc"} = array();
-        ${$prefix . "_wind_x"} = array();
-        ${$prefix . "_wind_y"} = array();
-        ${$prefix . "_wind_dir"} = array();
-        ${$prefix . "_date"} = array();
-        ${$prefix . "_qpf"} = array();
-        ${$prefix . "_qpf_accum"} = array();
-        $mos_time = "" . $mos_year . "-" . $mos_mon . "-" . $mos_day . "%20" . $mos_h . ":00";
-        $link = "https://mesonet.agron.iastate.edu/mos/csv.php?station=" . $ob_station . "&runtime=" . $mos_time . "&model=" . $mos["query_model"];
-
-        $mos_check = ${$prefix . "_check"};
-        $k = -1;
-        $data = file($link);
-        foreach ($data as $line) {
-            $k++;
-            $d = explode(",", trim($line));
-            if ($k >= 1 && $mos_check == 1) {
-                ${$prefix . "_time"}[] = strtotime($d[3]);
-                ${$prefix . "_date"}[] = date("m/d @ H\z", strtotime($d[3]));
-                ${$prefix . "_temp"}[] = "" . $d[5] . " F";
-                ${$prefix . "_dew"}[] = "" . $d[6] . " F";
-                ${$prefix . "_wdir"}[] = $d[8];
-                ${$prefix . "_wspd"}[] = "" . round($d[9] * 1.15077945, 0) . " mph";
-                ${$prefix . "_snow"}[] = $d[16];
-                ${$prefix . "_qpf"}[] = $d[12];
-                ${$prefix . "_wind_x"}[] = cos(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
-                ${$prefix . "_wind_y"}[] = sin(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
-                ${$prefix . "_wind_dir"}[] = get_wind_dir($d[8]);
-                ${$prefix . "_snow_accum"}[] = array_sum(${$prefix . "_snow"});
-                ${$prefix . "_qpf_accum"}[] = array_sum(${$prefix . "_qpf"});
-                ${$prefix . "_hiwc"}[] = mos_hiwc($d[5], $d[6], $d[9]);
-            }
-        }
-    }
-
-
-    //3-hourly model consensus
-    $con_temp = array();
-    $con_dew = array();
-    $con_ws = array();
-    $con_p = array();
-    $con_pa = array();
-    $con_wd = array();
-    $consensus_t = array();
-    for ($i = $min; $i <= $max; $i = $i + 10800) {
-        $total_temp = 0;
-        $total_dew = 0;
-        $total_ws = 0;
-        $total_wd = 0;
-        $total_wd_x = 0;
-        $total_wd_y = 0;
-        $total_p = 0;
-        $total_pa = 0;
-        $n = 0;
-        if (in_array($i, $nam_time)) {
-            $n++;
-            $index = array_search($i, $nam_time);
-            @$total_p = $total_p + $nam_var1[$index];
-            @$total_pa = $total_pa + $nam_var2[$index];
-            @$total_temp = $total_temp + $nam_var3[$index];
-            @$total_dew = $total_dew + $nam_var4[$index];
-            @$total_ws = $total_ws + $nam_var5[$index];
-            $total_wd_x = $total_wd_x + $nam_wind_x[$index];
-            $total_wd_y = $total_wd_y + $nam_wind_y[$index];
-        }
-        if (in_array($i, $namm_time)) {
-            $n++;
-            $index = array_search($i, $namm_time);
-            @$total_p = $total_p + $namm_var1[$index];
-            @$total_pa = $total_pa + $namm_var2[$index];
-            @$total_temp = $total_temp + $namm_var3[$index];
-            @$total_dew = $total_dew + $namm_var4[$index];
-            @$total_ws = $total_ws + $namm_var5[$index];
-            $total_wd_x = $total_wd_x + $namm_wind_x[$index];
-            $total_wd_y = $total_wd_y + $namm_wind_y[$index];
-        }
-        if (in_array($i, $gfs_time)) {
-            $n++;
-            $index = array_search($i, $gfs_time);
-            @$total_p = $total_p + $gfs_var1[$index];
-            @$total_pa = $total_pa + $gfs_var2[$index];
-            @$total_temp = $total_temp + $gfs_var3[$index];
-            @$total_dew = $total_dew + $gfs_var4[$index];
-            @$total_ws = $total_ws + $gfs_var5[$index];
-            $total_wd_x = $total_wd_x + $gfs_wind_x[$index];
-            $total_wd_y = $total_wd_y + $gfs_wind_y[$index];
-        }
-        if (in_array($i, $gfsm_time)) {
-            $n++;
-            $index = array_search($i, $gfsm_time);
-            @$total_p = $total_p + $gfsm_var1[$index];
-            @$total_pa = $total_pa + $gfsm_var2[$index];
-            @$total_temp = $total_temp + $gfsm_var3[$index];
-            @$total_dew = $total_dew + $gfsm_var4[$index];
-            @$total_ws = $total_ws + $gfsm_var5[$index];
-            $total_wd_x = $total_wd_x + $gfsm_wind_x[$index];
-            $total_wd_y = $total_wd_y + $gfsm_wind_y[$index];
-        }
-        if (in_array($i, $rap_time)) {
-            $n++;
-            $index = array_search($i, $rap_time);
-            @$total_p = $total_p + $rap_var1[$index];
-            @$total_pa = $total_pa + $rap_var2[$index];
-            @$total_temp = $total_temp + $rap_var3[$index];
-            @$total_dew = $total_dew + $rap_var4[$index];
-            @$total_ws = $total_ws + $rap_var5[$index];
-            $total_wd_x = $total_wd_x + $rap_wind_x[$index];
-            $total_wd_y = $total_wd_y + $rap_wind_y[$index];
-        }
-        if (in_array($i, $nam4km_time)) {
-            $n++;
-            $index = array_search($i, $nam4km_time);
-            @$total_p = $total_p + $nam4km_var1[$index];
-            @$total_pa = $total_pa + $nam4km_var2[$index];
-            @$total_temp = $total_temp + $nam4km_var3[$index];
-            @$total_dew = $total_dew + $nam4km_var4[$index];
-            @$total_ws = $total_ws + $nam4km_var5[$index];
-            $total_wd_x = $total_wd_x + $nam4km_wind_x[$index];
-            $total_wd_y = $total_wd_y + $nam4km_wind_y[$index];
-        }
-        if (in_array($i, $gfs_mos_time)) {
-            $n++;
-            $index = array_search($i, $gfs_mos_time);
-            @$total_temp = $total_temp + $gfs_mos_temp[$index];
-            @$total_dew = $total_dew + $gfs_mos_dew[$index];
-            @$total_ws = $total_ws + $gfs_mos_wspd[$index];
-            $total_wd_x = $total_wd_x + $gfs_mos_wind_x[$index];
-            $total_wd_y = $total_wd_y + $gfs_mos_wind_y[$index];
-        }
-        if (in_array($i, $gfsm_mos_time)) {
-            $n++;
-            $index = array_search($i, $gfsm_mos_time);
-            @$total_temp = $total_temp + $gfsm_mos_temp[$index];
-            @$total_dew = $total_dew + $gfsm_mos_dew[$index];
-            @$total_ws = $total_ws +    $gfsm_mos_wspd[$index];
-            $total_wd_x = $total_wd_x + $gfsm_mos_wind_x[$index];
-            $total_wd_y = $total_wd_y + $gfsm_mos_wind_y[$index];
-        }
-        if (in_array($i, $nam_mos_time)) {
-            $n++;
-            $index = array_search($i, $nam_mos_time);
-            @$total_temp = $total_temp + $nam_mos_temp[$index];
-            @$total_dew = $total_dew + $nam_mos_dew[$index];
-            @$total_ws = $total_ws + $nam_mos_wspd[$index];
-            $total_wd_x = $total_wd_x + $nam_mos_wind_x[$index];
-            $total_wd_y = $total_wd_y + $nam_mos_wind_y[$index];
-        }
-
-        if ($n > 1) {
-            $con_temp[] = round($total_temp / $n, 0);
-            $con_dew[] = round($total_dew / $n, 0);
-            $con_ws[] = round($total_ws / $n, 0);
-            $con_p[] = round($total_p / $n, 2);
-            $con_pa[] = round($total_pa / $n, 2);
-            $total_wind_x = $total_wd_x / $n;
-            $total_wind_y = $total_wd_y / $n;
-            if ($total_wind_x == 0) {
-                $wind_dir = 0;
-            } else {
-                $wind_dir = rad2deg(atan($total_wind_y / $total_wind_x));
-            }
-            if ($total_wind_x < 0 && $total_wind_y > 0) {
-                $wind_dir = $wind_dir + 180;
-            }
-            if ($total_wind_x == 0 && $total_wind_y > 0) {
-                $wind_dir = $wind_dir + 90;
-            } elseif ($total_wind_x < 0 && $total_wind_y <= 0) {
-                $wind_dir = $wind_dir + 180;
-            }
-            $con_wd[] = get_wind_dir(($wind_dir * (-1)) + 270);
-            $consensus_t[] = $i;
-            $con_date[] = date("m/d @ H\z", $i);
-        }
-    }
-
-    ?>
-
-
     <map id="precip" name="precip">
         <form>
-
-            <?php
-            /**
-             * Render the HTML table cells for a single data source's row in the legend.
-             *
-             * @param string $label The label for the data source (e.g., "NAM", "GFS")
-             * @param string|null $date The date string for the row, or null if not applicable
-             * @param array $cols The array of column values to display
-             * @param int $width The width of each table cell (default: 83)
-             * @param bool $bold Whether to render the text in bold (default: false)
-             * @return array An array of HTML table cell strings
-             */
-            function render_source_cells($label, $date, $cols, $width = 83, $bold = false)
-            {
-                $colors = array("0000FF", "000099", "CC0000", "006600", "000000", "000000");
-                $b1 = $bold ? "<b>" : "";
-                $b2 = $bold ? "</b>" : "";
-                $cells = array("<td width=$width align=center><font color=000000>" . $b1 . $label . $b2 . "</font></td>");
-                if ($date === null) {
-                    for ($c = 0; $c < 7; $c++) {
-                        $cells[] = "<td width=$width align=center></td>";
-                    }
-                    return $cells;
-                }
-                $cells[] = "<td width=$width align=center><font color=000000>" . $b1 . $date . $b2 . "</font></td>";
-                foreach ($cols as $c => $val) {
-                    $cells[] = "<td width=$width align=center><font color=" . $colors[$c] . ">" . $b1 . $val . $b2 . "</font></td>";
-                }
-                return $cells;
-            }
-
-            /**
-             * Append a unit string to each value in an array.
-             *
-             * @param array $values The array of values to which the unit should be appended
-             * @param string $unit The unit string to append
-             * @return array The array of values with the unit appended
-             */
-            function append_unit($values, $unit)
-            {
-                $out = array();
-                foreach ($values as $v) {
-                    $out[] = $v . $unit;
-                }
-                return $out;
-            }
-
-            $dashes = function ($count) {
-                return array_fill(0, $count, "-");
-            };
-
-            // One entry per legend row-source, in the exact order columns are rendered
-            $sources = array(
-                "nam" => array("check" => $nam_check, "times" => $nam_time, "label" => $nam_init . "z NAM",
-                    "dates" => $nam_date, "cols" => array($nam_var1, $nam_var2, $nam_var3, $nam_var4, $nam_var5, $nam_var6)),
-                "namm" => array("check" => $namm_check, "times" => $namm_time, "label" => $namm_init . "z NAM",
-                    "dates" => $namm_date, "cols" => array($namm_var1, $namm_var2, $namm_var3, $namm_var4, $namm_var5, $namm_var6)),
-                "nam4km" => array("check" => $nam4km_check, "times" => $nam4km_time, "label" => $nam4km_init . "z NAM 4km",
-                    "dates" => $nam4km_date, "cols" => array($nam4km_var1, $nam4km_var2, $nam4km_var3, $nam4km_var4, $nam4km_var5, $nam4km_var6)),
-                "gfs" => array("check" => $gfs_check, "times" => $gfs_time, "label" => $gfs_init . "z GFS",
-                    "dates" => $gfs_date, "cols" => array($gfs_var1, $gfs_var2, $gfs_var3, $gfs_var4, $gfs_var5, $gfs_var6)),
-                "gfsm" => array("check" => $gfsm_check, "times" => $gfsm_time, "label" => $gfsm_init . "z GFS",
-                    "dates" => $gfsm_date, "cols" => array($gfsm_var1, $gfsm_var2, $gfsm_var3, $gfsm_var4, $gfsm_var5, $gfsm_var6)),
-                "rap" => array("check" => $rap_check, "times" => $rap_time,
-                    "label" => $rap_init . ($date >= 2012050100 ? "z RAP" : "z RUC"),
-                    "dates" => $rap_date, "cols" => array($rap_var1, $rap_var2, $rap_var3, $rap_var4, $rap_var5, $rap_var6)),
-                "nam_mos" => array("check" => $nam_mos_check, "times" => $nam_mos_time, "label" => $nam_init . "z NAM MOS",
-                    "dates" => $nam_mos_date, "cols" => array($dashes(count($nam_mos_time)), $dashes(count($nam_mos_time)), $nam_mos_temp, $nam_mos_dew, $nam_mos_wspd, $nam_mos_wind_dir)),
-                "gfs_mos" => array("check" => $gfs_mos_check, "times" => $gfs_mos_time, "label" => $gfs_init . "z GFS MOS",
-                    "dates" => $gfs_mos_date, "cols" => array($dashes(count($gfs_mos_time)), $dashes(count($gfs_mos_time)), $gfs_mos_temp, $gfs_mos_dew, $gfs_mos_wspd, $gfs_mos_wind_dir)),
-                "gfsm_mos" => array("check" => $gfsm_mos_check, "times" => $gfsm_mos_time, "label" => $gfsm_init . "z GFS MOS",
-                    "dates" => $gfsm_mos_date, "cols" => array($dashes(count($gfsm_mos_time)), $dashes(count($gfsm_mos_time)), $gfsm_mos_temp, $gfsm_mos_dew, $gfsm_mos_wspd, $gfsm_mos_wind_dir)),
-                "con" => array("check" => $con_check, "times" => $consensus_t, "label" => "Model Average", "bold" => true, "width" => 90,
-                    "dates" => $con_date, "cols" => array(
-                        append_unit($con_p, " in."), append_unit($con_pa, " in."), append_unit($con_temp, " F"),
-                        append_unit($con_dew, " F"), append_unit($con_ws, " mph"), $con_wd,
-                    )),
-                "nws" => array("check" => $nws_check, "times" => $nws_time_1, "label" => "NWS",
-                    "dates" => $nws_date, "cols" => array($nws_precip, $nws_sum, $nws_temp, $nws_dpt, $nws_wind_spd, $nws_wind_dir)),
-                "obs" => array("check" => $obs_check, "times" => $obs_time, "label" => "OBS - " . $ob_station,
-                    "dates" => $obs_date, "cols" => array($obs_precip, $obs_precip_accum, $obs_temp, $obs_dew, $obs_wspd, $obs_wdir)),
-            );
-
-            $row_titles = array(
-                "<u>Model:</u>", "<u>Day/Time:</u>", "<u>QPF:</u>", "<u>Total QPF:</u>",
-                "<u>2m Temp:</u>", "<u>2m Dewp:</u>", "<u>10m W-Spd:</u>", "<u>10m W-Dir:</u>",
-            );
-
-            $cell_state = array();
-            foreach ($sources as $key => $src) {
-                $cell_state[$key] = array_fill(0, 8, "");
-            }
-
-            $ul = 61;
-            $ur = 41;
-            $lr = 64;
-            $ll = 359;
-            $ul1 = $ul;
-            $lr1 = $lr;
-
-            $model_count = ($max - $min) / 3600;
-            for ($i = $min; $i <= $max; $i = $i + 3600) {
-                foreach ($sources as $key => $src) {
-                    if ($src["check"] != 1) {
-                        continue;
-                    }
-                    $times = $src["times"];
-                    $width = isset($src["width"]) ? $src["width"] : 83;
-                    $bold = isset($src["bold"]) ? $src["bold"] : false;
-                    if (in_array($i, $times)) {
-                        $index = array_search($i, $times);
-                        $cols_vals = array();
-                        foreach ($src["cols"] as $col_arr) {
-                            $cols_vals[] = $col_arr[$index];
-                        }
-                        $cell_state[$key] = render_source_cells($src["label"], $src["dates"][$index], $cols_vals, $width, $bold);
-                    } elseif (!empty($times) && ($i < min($times) || $i > max($times))) {
-                        $cell_state[$key] = render_source_cells($src["label"], null, null, $width, $bold);
-                    }
-                }
-
-                $string_begin = "<area shape=rect coords=" . $ul . "," . $ur . "," . $lr . "," . $ll . " onMouseOver=\"writeText('";
-                $string_end = "'); setMouse(this); \" />\n";
-
-                $table_html = "<table border=0 cellspacing=0 cellpadding=0>";
-                foreach ($row_titles as $r => $title) {
-                    $td_attr = ($r == 0) ? " width=62" : "";
-                    $table_html .= "<tr><td$td_attr>" . $title . "</td>";
-                    foreach ($sources as $key => $src) {
-                        $table_html .= $cell_state[$key][$r];
-                    }
-                    $table_html .= "</tr>";
-                }
-                $table_html .= "</table>";
-
-                echo "" . $string_begin . $table_html . $string_end . "";
-
-                $ul1 = $lr + 1;
-                $lr1 = $lr1 + (899 / ($model_count));
-
-                $ul = round(($ul1), 0);
-                $lr = round(($lr1), 0);
-
-            }
-
-            ?>
-
+            <?php echo $mapdata; ?>
         </form>
     </map>
 
