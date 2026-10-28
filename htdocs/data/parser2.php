@@ -1,6 +1,7 @@
 <?php
 require_once "../../config/settings.php";
 require_once "../../include/forms.php";
+require_once "../../include/util.php";
 
 putenv("TZ=UTC");
 date_default_timezone_set('UTC');
@@ -179,7 +180,7 @@ if ($model == "nam") {
     }
 }
 
-$fh = file_get_contents($link);
+$fh = cached_fetch($link, 600);
 if ($fh === false) {
     die("$link is not available");
 }

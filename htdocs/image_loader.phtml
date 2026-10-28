@@ -232,7 +232,7 @@ foreach ($model_prefixes as $mdl) {
     } else {
         $link = ROOTURL . "data/parser.php?model=" . $mdl . "&site=" . $site_l . "&date=" . $parse_date . "";
     }
-    $data = file_get_contents($link);
+    $data = cached_fetch($link, $archive_check == 1 ? 86400 : 600);
     $z2 = 0;
     if ($data !== False) {
         foreach (explode("\n", $data) as $line) {
@@ -280,6 +280,9 @@ foreach ($model_prefixes as $mdl) {
                     continue;
                 }
             } else {
+                if (count($d) < 2) {
+                    continue;
+                }
                 $mod_time = strtotime($d[1]);
                 if ($mod_time === FALSE) {
                     continue;
@@ -350,11 +353,12 @@ $obs_wspd = array();
 $obs_wdir = array();
 $obs_precip = array();
 $obs_precip_accum = array();
+$obs_precip_total = 0.0;
 $obs_date = array();
 $ob_station = "";
 $z = 0;
 $kf = -1;
-$data = file($link);
+$data = cached_fetch_lines($link, $archive_check == 1 ? 3600 : 300);
 $oHourLast = -99;
 foreach ($data as $line) {
     $z++;
@@ -402,7 +406,8 @@ foreach ($data as $line) {
                 $obs_precip[] = "M";
             }
             if (is_numeric($d[6])) {
-                $obs_precip_accum[] = "" . round(array_sum($obs_precip), 2) . " in.";
+                $obs_precip_total += round($d[6], 2);
+                $obs_precip_accum[] = "" . round($obs_precip_total, 2) . " in.";
             } else {
                 $obs_precip_accum[] = "M";
             }
@@ -472,7 +477,7 @@ $nws_dpt = array();
 $nws_wind_spd = array();
 $nws_wind_dir = array();
 
-$data = file_get_contents($link4);
+$data = cached_fetch($link4, 1800);
 $data = explode("\n", $data);
 foreach ($data as $line) {
     preg_match_all(".$nws_start_time_1.", $line, $id1);
@@ -670,7 +675,7 @@ foreach ($mos_models as $mos) {
 
     $mos_check = ${$prefix . "_check"};
     $k = -1;
-    $data = file($link);
+    $data = cached_fetch_lines($link, 1800);
     foreach ($data as $line) {
         $k++;
         $d = explode(",", trim($line));
@@ -681,8 +686,8 @@ foreach ($mos_models as $mos) {
             ${$prefix . "_dew"}[] = "" . $d[6] . " F";
             ${$prefix . "_wdir"}[] = $d[8];
             ${$prefix . "_wspd"}[] = "" . round($d[9] * 1.15077945, 0) . " mph";
-            ${$prefix . "_snow"}[] = $d[16];
-            ${$prefix . "_qpf"}[] = $d[12];
+            ${$prefix . "_snow"}[] = is_numeric($d[16]) ? (float)$d[16] : 0.0;
+            ${$prefix . "_qpf"}[] = is_numeric($d[12]) ? (float)$d[12] : 0.0;
             ${$prefix . "_wind_x"}[] = cos(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
             ${$prefix . "_wind_y"}[] = sin(deg2rad(270 - $d[8])) * ($d[9] * 0.514444444);
             ${$prefix . "_wind_dir"}[] = get_wind_dir($d[8]);

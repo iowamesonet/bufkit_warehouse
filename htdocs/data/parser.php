@@ -1,6 +1,7 @@
 <?php
 require_once "../../config/settings.php";
 require_once "../../include/forms.php";
+require_once "../../include/util.php";
 
 putenv("TZ=UTC");
 date_default_timezone_set('UTC');
@@ -168,7 +169,7 @@ if ($model == "nam") {
 } elseif ($model == "rap" || $model == "ruc") {
     if ($date == "" && $model == "rap") {
         $link = METFS1 . "bufkit/rap/rap_" . $site . ".buf";
-        $fh = file_get_contents($link);
+        $fh = cached_fetch($link, 600);
         if ($fh === false) {
             die();
         }
@@ -242,7 +243,7 @@ if ($model == "nam") {
 } elseif ($model == "hrrr") {
     if ($date == "") {
         $link = METFS1 . "bufkit/hrrr/hrrr_" . $site . ".buf";
-        $fh = file_get_contents($link);
+        $fh = cached_fetch($link, 600);
         if ($fh === false) {
             die();
         }
@@ -283,7 +284,7 @@ if (substr($link, 0, 4) !== "http") {
     $link = METFS1 . "bufkit/$link";
 }
 
-$fh = @file_get_contents($link);
+$fh = cached_fetch($link, $date == "" ? 600 : 86400);
 if ($fh === false) {
     die();
 }
