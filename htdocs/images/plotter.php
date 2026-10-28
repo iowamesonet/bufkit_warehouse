@@ -5,6 +5,7 @@
 // Purpose:	Generates meteogram from user-specified variables using available data
 require_once "../../config/settings.php";
 require_once "../../include/forms.php";
+require_once "../../include/util.php";
 
 require_once "../../include/jpgraph/jpgraph.php";
 require_once "../../include/jpgraph/jpgraph_line.php";
@@ -294,7 +295,7 @@ for ($z = 0; $z <= 5; $z++) {
     }
     $temp_maxt = 0;
     $temp_sr = 0;
-    $data = file_get_contents($link);
+    $data = cached_fetch($link, 600);
     if ($data === FALSE) {
         continue;
     }
@@ -626,7 +627,7 @@ if (!empty($start_time) && !empty($end_time)) {
     $end = $max;
 } else {
     $link = ROOTURL . "data/parser2.php?model=gfs&site={$site}&date=" . $parse_date_gfs . "";
-    $data = file_get_contents($link);
+    $data = cached_fetch($link, 600);
     $data = explode("\n", $data);
     foreach ($data as $line) {
         $d = explode(",", trim($line));
@@ -634,7 +635,7 @@ if (!empty($start_time) && !empty($end_time)) {
         $maxvalid = strtotime($d[1]);
     }
     $link = ROOTURL . "data/parser2.php?model=gfsm&site={$site}&date=" . $parse_date_gfsm . "";
-    $data = file_get_contents($link);
+    $data = cached_fetch($link, 600);
     $data = explode("\n", $data);
     foreach ($data as $line) {
         $d = explode(",", trim($line));
@@ -667,7 +668,7 @@ if ($var1 == "snow_accum" && $date == "") {
             $dt = 1;
             $link = METFS1 . "cobb/nam4km/nam4km_" . strtolower($site) . ".dat";
         }
-        $data = @file_get_contents($link);
+        $data = cached_fetch($link, 600);
         if ($data === False) {
             continue;
         }
@@ -821,7 +822,7 @@ if ($obs == "1" && in_array($site, $sites)) {
         );
     }
     $oHourLast = -99;
-    $data = file_get_contents($link3);
+    $data = cached_fetch($link3, 300);
     if ($data === FALSE) {
         die("Failed to retrieve data from $link3");
     }
@@ -952,7 +953,7 @@ for ($z = 0; $z <= 2; $z++) {
         $link = "https://mesonet.agron.iastate.edu/mos/csv.php?station=" . $ob_station . "&runtime=" . $mos_time . "&model=GFS";
     }
     $k = -1;
-    $data = file_get_contents($link);
+    $data = cached_fetch($link, 1800);
     if ($data === false) {
         continue;
     }
@@ -1117,7 +1118,7 @@ if ($nws == 1 && in_array($site, $sites) && $date == "") {
     $nws_t = "start-valid-time";
     $value = "value";
 
-    $data = file_get_contents($link4);
+    $data = cached_fetch($link4, 1800);
     $data = explode("\n", $data);
     foreach ($data as $line) {
         preg_match_all(".$nws_t.", $line, $id);
@@ -1149,7 +1150,7 @@ if ($nws == 1 && in_array($site, $sites) && $date == "") {
     if ($var1 == "wind") {
         $link4_5 = "&product=time-series&begin=" . $init_time . "%3A00%3A00&end=" . $end_t . "%3A00%3A00&Unit=e&wgust=wgust&Submit=Submit";
         $link4 = "" . $link4_1 . "" . $link4_2 . "" . $link4_3 . "" . $link4_4 . "" . $link4_5 . "";
-        $data = file_get_contents($link4);
+        $data = cached_fetch($link4, 1800);
         $data = explode("\n", $data);
         foreach ($data as $line) {
             preg_match_all(".$nws_t.", $line, $id);

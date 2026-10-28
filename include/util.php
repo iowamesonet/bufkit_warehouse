@@ -8,11 +8,80 @@ require_once dirname(__FILE__) . "/../config/settings.php";
  * @return array An array of lines from the fetched data.
  */
 function get_realtime_lines($partial) {
-    $data = file_get_contents(METFS1 . "bufkit/". $partial);
+    $data = cached_fetch(METFS1 . "bufkit/". $partial, 600);
     if ($data === FALSE) {
         die("Failed to retrieve data from `$partial`.");
     }
     return explode("\n", $data);
+}
+
+/**
+ * Fetch a URL through a Memcached-backed cache, falling back to a direct fetch.
+ *
+ * Concurrent requests for the same URL (e.g. many plot images loaded by one
+ * page) are coordinated with a short lock so only one performs the fetch.
+ *
+ * @param string $url The URL to fetch.
+ * @param int $ttl Seconds to cache a successful response.
+ * @return string|false The response body, or false on failure.
+ */
+function cached_fetch($url, $ttl = 300)
+{
+    static $mc = null;
+    static $tried = false;
+    if (!$tried) {
+        $tried = true;
+        if (class_exists("Memcached")) {
+            $mc = new Memcached();
+            $mc->setOption(Memcached::OPT_COMPRESSION, true);
+            $mc->setOption(Memcached::OPT_CONNECT_TIMEOUT, 200);
+            $mc->addServer(
+                defined("MEMCACHED_HOST") ? MEMCACHED_HOST : "127.0.0.1",
+                defined("MEMCACHED_PORT") ? MEMCACHED_PORT : 11211
+            );
+        }
+    }
+    $ctx = stream_context_create(array("http" => array("timeout" => 20)));
+    if ($mc === null) {
+        return @file_get_contents($url, false, $ctx);
+    }
+    $key = "bufkit:" . sha1($url);
+    $lockkey = "lock:" . $key;
+    // Cached values are prefixed: "+" for data, "-" for a cached failure
+    for ($i = 0; $i < 60; $i++) {
+        $val = $mc->get($key);
+        if (is_string($val) && $val !== "") {
+            return $val[0] === "+" ? substr($val, 1) : false;
+        }
+        if ($mc->add($lockkey, 1, 30)) {
+            $data = @file_get_contents($url, false, $ctx);
+            if ($data === false) {
+                $mc->set($key, "-", 60);
+            } else {
+                $mc->set($key, "+" . $data, $ttl);
+            }
+            $mc->delete($lockkey);
+            return $data;
+        }
+        usleep(250000);
+    }
+    return @file_get_contents($url, false, $ctx);
+}
+
+/**
+ * Like file(): cached_fetch() split into lines that keep their newline.
+ *
+ * @param string $url The URL to fetch.
+ * @param int $ttl Seconds to cache a successful response.
+ * @return array Lines of the response, empty on failure.
+ */
+function cached_fetch_lines($url, $ttl = 300)
+{
+    $data = cached_fetch($url, $ttl);
+    if ($data === false || $data === "") {
+        return array();
+    }
+    return preg_split('/(?<=\n)/', $data, -1, PREG_SPLIT_NO_EMPTY);
 }
 
 /**
