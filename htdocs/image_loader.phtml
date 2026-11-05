@@ -9,33 +9,36 @@ $uri = 'image_loader.phtml';
 
 $site = strtolower(get_str404("site", "kdsm"));
 $var = get_str404("var", "tf");
-$nam = get_str404("nam", "1");
-$nam4km = get_str404("nam4km", "1");
-$rrfs = get_str404("rrfs", "1");
-$namm = get_str404("namm", "1");
-$gfs = get_str404("gfs", "1");
-$gfsm = get_str404("gfsm", "1");
-$rap = get_str404("rap", "1");
-$nam_mos = get_str404("nam_mos", "1");
-$namm_mos = get_str404("namm_mos", "1");
-$gfs_mos = get_str404("gfs_mos", "1");
-$gfsm_mos = get_str404("gfsm_mos", "1");
-$con = get_str404("con", "1");
-$obs = get_str404("obs", "1");
-$nws = get_str404("nws", "1");
+
+// Dead models, disabled by default
+$nam = get_str404("nam", "off");
+$nam4km = get_str404("nam4km", "off");
+$namm = get_str404("namm", "off");
+$nam_mos = get_str404("nam_mos", "off");
+$namm_mos = get_str404("namm_mos", "off");
+
+$rrfs = get_str404("rrfs", "on");
+$gfs = get_str404("gfs", "on");
+$gfsm = get_str404("gfsm", "on");
+$rap = get_str404("rap", "on");
+$gfs_mos = get_str404("gfs_mos", "on");
+$gfsm_mos = get_str404("gfsm_mos", "on");
+$con = get_str404("con", "on");
+$obs = get_str404("obs", "on");
+$nws = get_str404("nws", "on");
 $ratio = get_str404("ratio", "11");
-$compaction = get_str404("compaction", "1");
-$cobb = get_str404("cobb", "1");
-$max_t = get_str404("max_t", "1");
-$mean_mt = get_str404("mean_mt", "1");
-$max_mt = get_str404("max_mt", "1");
-$mean = get_str404("mean", "1");
+$compaction = get_str404("compaction", "on");
+$cobb = get_str404("cobb", "on");
+$max_t = get_str404("max_t", "on");
+$mean_mt = get_str404("mean_mt", "on");
+$max_mt = get_str404("max_mt", "on");
+$mean = get_str404("mean", "on");
 $date = get_str404("date", "");
 $year = get_str404("year", "");
 $month = get_str404("month", "");
 $day = get_str404("day", "");
 $hour = get_str404("hour", "");
-$archive = get_str404("archive", "0");
+$archive = get_str404("archive", "off");
 
 
 if ($year == "" || $month == "" || $day == "" || $hour == "") {
@@ -53,8 +56,6 @@ if ($year == "" || $month == "" || $day == "" || $hour == "") {
         $date = "" . $year . "" . $month . "" . $day . "" . $hour . "";
     }
 }
-
-$on_list = array($nam, $namm, $gfs, $gfsm, $rap, $nam_mos, $gfs_mos, $gfsm_mos, $con, $nws, $obs, $compaction, $cobb, $max_t, $mean_mt, $max_mt, $mean, $archive);
 
 // Each of these params is either "on" or absent; derive the corresponding *_check flag
 $toggle_fields = array(
@@ -80,15 +81,8 @@ $toggle_fields = array(
     "archive" => $archive,
 );
 
-if (in_array("on", $on_list)) {
-    foreach ($toggle_fields as $field_name => $field_val) {
-        ${$field_name . "_check"} = ($field_val == "on") ? 1 : 0;
-    }
-} else {
-    foreach ($toggle_fields as $field_name => $field_val) {
-        ${$field_name . "_check"} = 1;
-    }
-    $archive_check = 0;
+foreach ($toggle_fields as $field_name => $field_val) {
+    ${$field_name . "_check"} = ($field_val === "on") ? 1: 0;
 }
 
 

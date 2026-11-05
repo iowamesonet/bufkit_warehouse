@@ -30,14 +30,18 @@ $titles = array('stn', 'date', 'Mean Sea Level Pressure', 'Surface Pressure', 's
 $now = strtotime("now");
 $site = get_str404("site", "kdsm");
 $var = get_str404("var", "tf");
-$nam = get_str404("nam", "1");
-$namm = get_str404("namm", "1");
+
+// Disable dead models by default
+$nam = get_str404("nam", "0");
+$namm = get_str404("namm", "0");
+$nam_mos = get_str404("nam_mos", "0");
+$namm_mos = get_str404("namm_mos", "0");
+$nam4km = get_str404("nam4km", "0");
+
+$rrfs = get_str404("rrfs", "0");
 $gfs = get_str404("gfs", "1");
 $gfsm = get_str404("gfsm", "1");
 $rap = get_str404("rap", "1");
-$nam4km = get_str404("nam4km", "1");
-$nam_mos = get_str404("nam_mos", "1");
-$namm_mos = get_str404("namm_mos", "1");
 $gfs_mos = get_str404("gfs_mos", "1");
 $gfsm_mos = get_str404("gfsm_mos", "1");
 $con = get_str404("con", "1");
@@ -167,10 +171,9 @@ $namm_cobb_time = array();
 $gfs_cobb_time = array();
 $gfsm_cobb_time = array();
 
-
 $mins = array();
 $maxs = array();
-for ($z = 0; $z <= 5; $z++) {
+for ($z = 0; $z <= 6; $z++) {
     if ($z == 0) {
         $mdl = "nam";
         $dt = 1;
@@ -275,6 +278,28 @@ for ($z = 0; $z <= 5; $z++) {
                 $parse_date = "" . $year . "" . $mon . "" . $day . "12";
             }
         }
+    } elseif ($z == 6) {
+        $mdl = "rrfs";
+        $dt = 3;
+        $rrfs_var = array();
+        $rrfs_var1 = array();
+        $rrfs_var2 = array();
+        $rrfs_var3 = array();
+        $buf_t_rrfs = array();
+        $rrfs_uwnd = array();
+        $rrfs_vwnd = array();
+        if ($date != "") {
+            if ($hr >= 0 && $hr <= 5) {
+                $parse_date = "" . $year . "" . $mon . "" . $day . "00";
+            } elseif ($hr >= 6 && $hr <= 11) {
+                $parse_date = "" . $year . "" . $mon . "" . $day . "06";
+            } elseif ($hr >= 12 && $hr <= 17) {
+                $parse_date = "" . $year . "" . $mon . "" . $day . "12";
+            } else {
+                $parse_date = "" . $year . "" . $mon . "" . $day . "18";
+            }
+        }
+        $parse_date_rrfs = $parse_date;
     }
     $z2 = 0;
     $tz2 = 0;
@@ -610,6 +635,51 @@ for ($z = 0; $z <= 5; $z++) {
                 if ($h2 == 0) {
                     $buf_nam4km_init = date("H", strtotime($d[count($d) - 1]));
                     $nam4km_init = strtotime($d[count($d) - 1]);
+                }
+            }
+            if ($z == 6) {
+                if ($var1 == "snow_accum") {
+                    $snow[] = $d[$index];
+                    $snow1[] = $d[$index1];
+                    if ($compaction == 1) {
+                        $temp_cobb = 0;
+                        $temp_cobb1 = 0;
+                        for ($i = 0; $i <= $h; $i++) {
+                            $exp = exp($a * sqrt(($h - $i) * $dt));
+                            $temp_cobb = $temp_cobb + ($snow[$i] * $exp);
+                            $temp_cobb1 = $temp_cobb1 + ($snow1[$i] * $exp);
+                        }
+                        if ($ratio != 0) {
+                            $rrfs_var[] = $temp_cobb;
+                        }
+                        $rrfs_var1[] = $temp_cobb1;
+                    } else {
+                        if ($ratio != 0) {
+                            $rrfs_var[] = array_sum($snow);
+                        }
+                        $rrfs_var1[] = array_sum($snow1);
+                    }
+                } elseif ($var1 == "wind") {
+                    $nam4km_var[] = $d[$index];
+                    if ($d[$index1] == 0) {
+                        $rrfs_var1[] = $d[$index];
+                    } else {
+                        $rrfs_var1[] = $d[$index1] * 1.15077945;
+                    }
+                    if ($d[$index2] == 0) {
+                        $rrfs_var2[] = $d[$index];
+                    } else {
+                        $rrfs_var2[] = $d[$index2] * 1.15077945;
+                    }
+                } else {
+                    $rrfs_var[] = $d[$index];
+                    $rrfs_uwnd[] = $d[$uwnd_index];
+                    $rrfs_vwnd[] = $d[$vwnd_index];
+                }
+                $buf_t_rrfs[] = strtotime($d[1]);
+                if ($h2 == 0) {
+                    $buf_rrfs_init = date("H", strtotime($d[count($d) - 1]));
+                    $rrfs_init = strtotime($d[count($d) - 1]);
                 }
             }
         }
@@ -961,7 +1031,7 @@ for ($z = 0; $z <= 2; $z++) {
     foreach ($data as $line) {
         $k++;
         $d = explode(",", trim($line));
-        if (sizeof($d) < 5){
+        if (sizeof($d) < 5) {
             continue;
         }
         if ($k >= 1) {
@@ -1287,6 +1357,17 @@ if ($con == 1) {
                 $total = $total + $nam4km_var[$index];
             }
         }
+        if (in_array($i, $buf_t_rrfs) && !empty($rrfs_var) && $rrfs == 1) {
+            $n++;
+            $index = array_search($i, $buf_t_rrfs);
+            if ($var == "wdir") {
+                $total_x = $total_x + $rrfs_uwnd[$index];
+                $total_y = $total_y + $rrfs_vwnd[$index];
+                $var_list[] = $rrfs_vwnd[$index];
+            } else {
+                $total = $total + $rrfs_var[$index];
+            }
+        }
         if (in_array($i, $gfs_mos_time) && !empty($gfs_mos_var) && $gfs_mos == 1) {
             $n++;
             $index = array_search($i, $gfs_mos_time);
@@ -1325,6 +1406,11 @@ if ($con == 1) {
             $n1++;
             $index = array_search($i, $buf_t_nam);
             $total1 = $total1 + $nam_var1[$index];
+        }
+        if (in_array($i, $buf_t_rrfs) && !empty($rrfs_var1) && $rrfs == 1) {
+            $n1++;
+            $index = array_search($i, $buf_t_rrfs);
+            $total1 = $total1 + $rrfs_var1[$index];
         }
         if (in_array($i, $buf_t_namm) && !empty($namm_var1) && $namm == 1) {
             $n1++;
@@ -1383,6 +1469,11 @@ if ($con == 1) {
                 $n2++;
                 $index = array_search($i, $buf_t_nam);
                 $total2 = $total2 + $nam_var2[$index];
+            }
+            if (in_array($i, $buf_t_rrfs) && !empty($rrfs_var2) && $rrfs == 1) {
+                $n2++;
+                $index = array_search($i, $buf_t_rrfs);
+                $total2 = $total2 + $rrfs_var2[$index];
             }
             if (in_array($i, $buf_t_namm) && !empty($namm_var2) && $namm == 1) {
                 $n2++;
@@ -1473,6 +1564,36 @@ if ($nam == 1 && !empty($nam_var) && !empty($buf_t_nam) && count($nam_var) == co
     }
 }
 
+if ($rrfs == 1 && !empty($rrfs_var) && !empty($buf_t_rrfs) && count($rrfs_var) == count($buf_t_rrfs)) {
+    if ($var == "wdir") {
+        $lineplot_nam = new ScatterPlot($rrfs_var, $buf_t_rrfs);
+        $lineplot_nam->mark->SetType(MARK_FILLEDCIRCLE);
+        $lineplot_nam->mark->SetWidth(3);
+        $lineplot_nam->mark->SetFillColor("red");
+    } else {
+        $lineplot_nam = new LinePlot($rrfs_var, $buf_t_rrfs);
+        $lineplot_nam->SetColor("red");
+        $lineplot_nam->SetWeight(3);
+    }
+    if ($var1 == "snow_accum") {
+        if ($ratio != 0) {
+            $lineplot_nam->SetLegend("" . $buf_rrfs_init . "z RRFS " . $ratio . ":1");
+            $graph->Add($lineplot_nam);
+            $lineplot_nam->SetColor("red");
+        }
+    } elseif ($var1 == "wind") {
+        if ($mean == 1) {
+            $lineplot_nam->SetLegend("" . $buf_rrfs_init . "z RRFS");
+            $graph->Add($lineplot_nam);
+            $lineplot_nam->SetColor("red");
+        }
+    } else {
+        $lineplot_nam->SetLegend("" . $buf_rrfs_init . "z RRFS");
+        $graph->Add($lineplot_nam);
+        $lineplot_nam->SetColor("red");
+    }
+}
+
 if ($nam == 1 && !empty($nam_var1) && !empty($buf_t_nam) && count($nam_var1) == count($buf_t_nam)) {
     $lineplot_nam1 = new LinePlot($nam_var1, $buf_t_nam);
     $lineplot_nam1->SetColor("red");
@@ -1492,6 +1613,29 @@ if ($nam == 1 && !empty($nam_var1) && !empty($buf_t_nam) && count($nam_var1) == 
         }
     } else {
         $lineplot_nam1->SetLegend("" . $buf_nam_init . "z NAM");
+        $graph->Add($lineplot_nam1);
+        $lineplot_nam1->SetColor("red");
+    }
+}
+if ($rrfs == 1 && !empty($rrfs_var1) && !empty($buf_t_rrfs) && count($rrfs_var1) == count($buf_t_rrfs)) {
+    $lineplot_nam1 = new LinePlot($rrfs_var1, $buf_t_rrfs);
+    $lineplot_nam1->SetColor("red");
+    $lineplot_nam1->SetWeight(3);
+    $lineplot_nam1->SetStyle("dashed");
+    if ($var1 == "snow_accum") {
+        if ($max_t == 1) {
+            $lineplot_nam1->SetLegend("" . $buf_rrfs_init . "z RRFS Max-T Prof");
+            $graph->Add($lineplot_nam1);
+            $lineplot_nam1->SetColor("red");
+        }
+    } elseif ($var1 == "wind") {
+        if ($mean_mt == 1) {
+            $lineplot_nam1->SetLegend("" . $buf_rrfs_init . "z RRFS Mean MT");
+            $graph->Add($lineplot_nam1);
+            $lineplot_nam1->SetColor("red");
+        }
+    } else {
+        $lineplot_nam1->SetLegend("" . $buf_rrfs_init . "z RRFS");
         $graph->Add($lineplot_nam1);
         $lineplot_nam1->SetColor("red");
     }
@@ -1553,6 +1697,36 @@ if ($namm == 1 && !empty($namm_var) && !empty($buf_t_namm) && count($namm_var) =
         }
     } else {
         $lineplot_namm->SetLegend("" . $buf_namm_init . "z NAM");
+        $graph->Add($lineplot_namm);
+        $lineplot_namm->SetColor("darkred");
+    }
+}
+
+if ($rrfs == 1 && !empty($rrfs_var) && !empty($buf_t_rrfs) && count($rrfs_var) == count($buf_t_rrfs)) {
+    if ($var == "wdir") {
+        $lineplot_namm = new ScatterPlot($rrfs_var, $buf_t_rrfs);
+        $lineplot_namm->mark->SetType(MARK_FILLEDCIRCLE);
+        $lineplot_namm->mark->SetWidth(3);
+        $lineplot_namm->mark->SetFillColor("darkred");
+    } else {
+        $lineplot_namm = new LinePlot($rrfs_var, $buf_t_rrfs);
+        $lineplot_namm->SetColor("darkred");
+        $lineplot_namm->SetWeight(3);
+    }
+    if ($var1 == "snow_accum") {
+        if ($ratio != 0) {
+            $lineplot_namm->SetLegend("" . $buf_rrfs_init . "z RRFS " . $ratio . ":1");
+            $graph->Add($lineplot_namm);
+            $lineplot_namm->SetColor("darkred");
+        }
+    } elseif ($var1 == "wind") {
+        if ($mean == 1) {
+            $lineplot_namm->SetLegend("" . $buf_rrfs_init . "z RRFS");
+            $graph->Add($lineplot_namm);
+            $lineplot_namm->SetColor("darkred");
+        }
+    } else {
+        $lineplot_namm->SetLegend("" . $buf_rrfs_init . "z RRFS");
         $graph->Add($lineplot_namm);
         $lineplot_namm->SetColor("darkred");
     }
@@ -2177,7 +2351,7 @@ if ($obs == 1 && !empty($obs_var1) && !empty($obs_time) && count($obs_var1) == c
 }
 
 // Check to see if anything has been plotted to the graph
-if (sizeof($graph->plots) === 0){
+if (sizeof($graph->plots) === 0) {
     $bad = imagecreatefrompng("not_available.png");
     header('Content-Type: image/png');
     imagepng($bad);
