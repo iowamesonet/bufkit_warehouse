@@ -9,15 +9,27 @@ $uri = 'image_loader.phtml';
 
 $site = strtolower(get_str404("site", "kdsm"));
 $var = get_str404("var", "tf");
-$nam = get_str404("nam", "1");
-$nam4km = get_str404("nam4km", "1");
+$date = get_str404("date", "");
+$year = get_str404("year", "");
+$month = get_str404("month", "");
+$day = get_str404("day", "");
+$hour = get_str404("hour", "");
+
+// Here lies dragons
+// The HTML checkboxes default to value="on", so we have ugliness with how
+// defaulting to disabled works.
+
+// Dead model should default to disabled
+$nam = get_str404("nam", "0");
+$nam4km = get_str404("nam4km", "0");
+$namm = get_str404("namm", "0");
+$nam_mos = get_str404("nam_mos", "0");
+$namm_mos = get_str404("namm_mos", "0");
+
 $rrfs = get_str404("rrfs", "1");
-$namm = get_str404("namm", "1");
 $gfs = get_str404("gfs", "1");
 $gfsm = get_str404("gfsm", "1");
 $rap = get_str404("rap", "1");
-$nam_mos = get_str404("nam_mos", "1");
-$namm_mos = get_str404("namm_mos", "1");
 $gfs_mos = get_str404("gfs_mos", "1");
 $gfsm_mos = get_str404("gfsm_mos", "1");
 $con = get_str404("con", "1");
@@ -30,11 +42,6 @@ $max_t = get_str404("max_t", "1");
 $mean_mt = get_str404("mean_mt", "1");
 $max_mt = get_str404("max_mt", "1");
 $mean = get_str404("mean", "1");
-$date = get_str404("date", "");
-$year = get_str404("year", "");
-$month = get_str404("month", "");
-$day = get_str404("day", "");
-$hour = get_str404("hour", "");
 $archive = get_str404("archive", "0");
 
 
@@ -80,15 +87,15 @@ $toggle_fields = array(
     "archive" => $archive,
 );
 
+// Backwards way to figure out if we have CGI params set to on
 if (in_array("on", $on_list)) {
     foreach ($toggle_fields as $field_name => $field_val) {
         ${$field_name . "_check"} = ($field_val == "on") ? 1 : 0;
     }
 } else {
     foreach ($toggle_fields as $field_name => $field_val) {
-        ${$field_name . "_check"} = 1;
+        ${$field_name . "_check"} = (int)${$field_name};
     }
-    $archive_check = 0;
 }
 
 
