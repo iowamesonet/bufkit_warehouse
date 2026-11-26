@@ -103,7 +103,7 @@ function compute_model_parse_date($mdl, $archive_check, $year, $month, $day, $ho
     if ($archive_check != 1) {
         return null;
     }
-    if (in_array($mdl, array("nam", "gfs", "nam4km"))) {
+    if (in_array($mdl, array("nam", "gfs", "nam4km", "rrfs", "hrrr"))) {
         if ($hour >= 0 && $hour <= 11) {
             return "" . $year . "" . $month . "" . $day . "00";
         }

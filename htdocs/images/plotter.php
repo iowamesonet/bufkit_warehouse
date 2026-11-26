@@ -13,6 +13,7 @@ require_once "../../include/jpgraph/jpgraph_date.php";
 require_once "../../include/jpgraph/jpgraph_scatter.php";
 require_once "../../include/jpgraph/jpgraph_iconplot.php";
 
+ini_set('display_errors', '0');
 date_default_timezone_set('UTC');
 
 $hgt = get_str404("hgt", "80");
@@ -35,6 +36,8 @@ $namm = get_str404("namm", "1");
 $gfs = get_str404("gfs", "1");
 $gfsm = get_str404("gfsm", "1");
 $rap = get_str404("rap", "1");
+$rrfs = get_str404("rrfs", "1");
+$hrrr = get_str404("hrrr", "1");
 $nam4km = get_str404("nam4km", "1");
 $nam_mos = get_str404("nam_mos", "1");
 $namm_mos = get_str404("namm_mos", "1");
@@ -170,7 +173,7 @@ $gfsm_cobb_time = array();
 
 $mins = array();
 $maxs = array();
-for ($z = 0; $z <= 5; $z++) {
+for ($z = 0; $z <= 7; $z++) {
     if ($z == 0) {
         $mdl = "nam";
         $dt = 1;
@@ -268,6 +271,40 @@ for ($z = 0; $z <= 5; $z++) {
         $buf_t_nam4km = array();
         $nam4km_uwnd = array();
         $nam4km_vwnd = array();
+        if ($date != "") {
+            if ($hr >= 0 && $hr <= 11) {
+                $parse_date = "" . $year . "" . $mon . "" . $day . "00";
+            } else {
+                $parse_date = "" . $year . "" . $mon . "" . $day . "12";
+            }
+        }
+    } elseif ($z == 6) {
+        $mdl = "hrrr";
+        $dt = 1;
+        $hrrr_var = array();
+        $hrrr_var1 = array();
+        $hrrr_var2 = array();
+        $hrrr_var3 = array();
+        $buf_t_hrrr = array();
+        $hrrr_uwnd = array();
+        $hrrr_vwnd = array();
+        if ($date != "") {
+            if ($hr >= 0 && $hr <= 11) {
+                $parse_date = "" . $year . "" . $mon . "" . $day . "00";
+            } else {
+                $parse_date = "" . $year . "" . $mon . "" . $day . "12";
+            }
+        }
+    } elseif ($z == 7) {
+        $mdl = "rrfs";
+        $dt = 1;
+        $rrfs_var = array();
+        $rrfs_var1 = array();
+        $rrfs_var2 = array();
+        $rrfs_var3 = array();
+        $buf_t_rrfs = array();
+        $rrfs_uwnd = array();
+        $rrfs_vwnd = array();
         if ($date != "") {
             if ($hr >= 0 && $hr <= 11) {
                 $parse_date = "" . $year . "" . $mon . "" . $day . "00";
@@ -611,7 +648,95 @@ for ($z = 0; $z <= 5; $z++) {
                     $buf_nam4km_init = date("H", strtotime($d[count($d) - 1]));
                     $nam4km_init = strtotime($d[count($d) - 1]);
                 }
-            }
+            } if ($z == 6) {
+                if ($var1 == "snow_accum") {
+                    $snow[] = $d[$index];
+                    $snow1[] = $d[$index1];
+                    if ($compaction == 1) {
+                        $temp_cobb = 0;
+                        $temp_cobb1 = 0;
+                        for ($i = 0; $i <= $h; $i++) {
+                            $exp = exp($a * sqrt(($h - $i) * $dt));
+                            $temp_cobb = $temp_cobb + ($snow[$i] * $exp);
+                            $temp_cobb1 = $temp_cobb1 + ($snow1[$i] * $exp);
+                        }
+                        if ($ratio != 0) {
+                            $hrrr_var[] = $temp_cobb;
+                        }
+                        $hrrr_var1[] = $temp_cobb1;
+                    } else {
+                        if ($ratio != 0) {
+                            $hrrr_var[] = array_sum($snow);
+                        }
+                        $hrrr_var1[] = array_sum($snow1);
+                    }
+                } elseif ($var1 == "wind") {
+                    $hrrr_var[] = $d[$index];
+                    if ($d[$index1] == 0) {
+                        $hrrr_var1[] = $d[$index];
+                    } else {
+                        $hrrr_var1[] = $d[$index1] * 1.15077945;
+                    }
+                    if ($d[$index2] == 0) {
+                        $hrrr_var2[] = $d[$index];
+                    } else {
+                        $hrrr_var2[] = $d[$index2] * 1.15077945;
+                    }
+                } else {
+                    $hrrr_var[] = $d[$index];
+                    $hrrr_uwnd[] = $d[$uwnd_index];
+                    $hrrr_vwnd[] = $d[$vwnd_index];
+                }
+                $buf_t_hrrr[] = strtotime($d[1]);
+                if ($h2 == 0) {
+                    $buf_hrrr_init = date("H", strtotime($d[count($d) - 1]));
+                    $hrrr_init = strtotime($d[count($d) - 1]);
+                }
+            } if ($z == 7) {
+                if ($var1 == "snow_accum") {
+                    $snow[] = $d[$index];
+                    $snow1[] = $d[$index1];
+                    if ($compaction == 1) {
+                        $temp_cobb = 0;
+                        $temp_cobb1 = 0;
+                        for ($i = 0; $i <= $h; $i++) {
+                            $exp = exp($a * sqrt(($h - $i) * $dt));
+                            $temp_cobb = $temp_cobb + ($snow[$i] * $exp);
+                            $temp_cobb1 = $temp_cobb1 + ($snow1[$i] * $exp);
+                        }
+                        if ($ratio != 0) {
+                            $rrfs_var[] = $temp_cobb;
+                        }
+                        $rrfs_var1[] = $temp_cobb1;
+                    } else {
+                        if ($ratio != 0) {
+                            $rrfs_var[] = array_sum($snow);
+                        }
+                        $rrfs_var1[] = array_sum($snow1);
+                    }
+                } elseif ($var1 == "wind") {
+                    $rrfs_var[] = $d[$index];
+                    if ($d[$index1] == 0) {
+                        $rrfs_var1[] = $d[$index];
+                    } else {
+                        $rrfs_var1[] = $d[$index1] * 1.15077945;
+                    }
+                    if ($d[$index2] == 0) {
+                        $rrfs_var2[] = $d[$index];
+                    } else {
+                        $rrfs_var2[] = $d[$index2] * 1.15077945;
+                    }
+                } else {
+                    $rrfs_var[] = $d[$index];
+                    $rrfs_uwnd[] = $d[$uwnd_index];
+                    $rrfs_vwnd[] = $d[$vwnd_index];
+                }
+                $buf_t_rrfs[] = strtotime($d[1]);
+                if ($h2 == 0) {
+                    $buf_rrfs_init = date("H", strtotime($d[count($d) - 1]));
+                    $rrfs_init = strtotime($d[count($d) - 1]);
+                }
+            } 
         }
     }
 }
@@ -627,6 +752,11 @@ if (!empty($start_time) && !empty($end_time)) {
     $end = $max;
 } else {
     $link = ROOTURL . "data/parser2.php?model=gfs&site={$site}&date=" . $parse_date_gfs . "";
+    //$link = ROOTURL . "data/parser2.php?model=gfs&site={$site}";
+    header('Content-type: text/plain');
+    echo $link;
+    die();
+
     $data = cached_fetch($link, 600);
     $data = explode("\n", $data);
     foreach ($data as $line) {
@@ -635,6 +765,7 @@ if (!empty($start_time) && !empty($end_time)) {
         $maxvalid = strtotime($d[1]);
     }
     $link = ROOTURL . "data/parser2.php?model=gfsm&site={$site}&date=" . $parse_date_gfsm . "";
+    //$link = ROOTURL . "data/parser2.php?model=gfsm&site={$site}";
     $data = cached_fetch($link, 600);
     $data = explode("\n", $data);
     foreach ($data as $line) {
@@ -667,6 +798,12 @@ if ($var1 == "snow_accum" && $date == "") {
         } elseif ($z == 4) {
             $dt = 1;
             $link = METFS1 . "cobb/nam4km/nam4km_" . strtolower($site) . ".dat";
+        } elseif ($z == 5) {
+            $dt = 1;
+            $link = METFS1 . "cobb/hrrr/hrrr_" . strtolower($site) . ".dat";
+        } elseif ($z == 6) {
+            $dt = 1;
+            $link = METFS1 . "cobb/rrfs/rrfs_" . strtolower($site) . ".dat";
         }
         $data = cached_fetch($link, 600);
         if ($data === False) {
@@ -1861,6 +1998,91 @@ if ($var1 == "snow_accum") {
 }
 
 
+
+if ($rrfs == 1 && !empty($rrfs_var) && !empty($buf_t_rrfs) && count($rrfs_var) == count($buf_t_rrfs)) {
+    if ($var == "wdir") {
+        $lineplot_rrfs = new ScatterPlot($rrfs_var, $buf_t_rrfs);
+        $lineplot_rrfs->mark->SetType(MARK_FILLEDCIRCLE);
+        $lineplot_rrfs->mark->SetWidth(3);
+        $lineplot_rrfs->mark->SetFillColor("red");
+    } else {
+        $lineplot_rrfs = new LinePlot($rrfs_var, $buf_t_rrfs);
+        $lineplot_rrfs->SetColor("red");
+        $lineplot_rrfs->SetWeight(3);
+    }
+    if ($var1 == "snow_accum") {
+        if ($ratio != 0) {
+            $lineplot_rrfs->SetLegend("" . $buf_rrfs_init . "z RRFS " . $ratio . ":1");
+            $graph->Add($lineplot_rrfs);
+            $lineplot_rrfs->SetColor("red");
+        }
+    } elseif ($var1 == "wind") {
+        if ($mean == 1) {
+            $lineplot_rrfs->SetLegend("" . $buf_rrfs_init . "z RRFS");
+            $graph->Add($lineplot_rrfs);
+            $lineplot_rrfs->SetColor("red");
+        }
+    } else {
+        $lineplot_rrfs->SetLegend("" . $buf_rrfs_init . "z RRFS");
+        $graph->Add($lineplot_rrfs);
+        $lineplot_rrfs->SetColor("red");
+    }
+}
+
+if ($rrfs == 1 && !empty($rrfs_var1) && !empty($buf_t_rrfs) && count($rrfs_var1) == count($buf_t_rrfs)) {
+    $lineplot_rrfs1 = new LinePlot($rrfs_var1, $buf_t_rrfs);
+    $lineplot_rrfs1->SetColor("red");
+    $lineplot_rrfs1->SetWeight(3);
+    $lineplot_rrfs1->SetStyle("dashed");
+    if ($var1 == "snow_accum") {
+        if ($max_t == 1) {
+            $lineplot_rrfs1->SetLegend("" . $buf_rrfs_init . "z RRFS Max-T Prof");
+            $graph->Add($lineplot_rrfs1);
+            $lineplot_rrfs1->SetColor("red");
+        }
+    } elseif ($var1 == "wind") {
+        if ($mean_mt == 1) {
+            $lineplot_rrfs1->SetLegend("" . $buf_rrfs_init . "z RRFS Mean MT");
+            $graph->Add($lineplot_rrfs1);
+            $lineplot_rrfs1->SetColor("red");
+        }
+    } else {
+        $lineplot_rrfs1->SetLegend("" . $buf_rrfs_init . "z RRFS");
+        $graph->Add($lineplot_rrfs1);
+        $lineplot_rrfs1->SetColor("red");
+    }
+}
+
+if ($var1 == "snow_accum") {
+    if ($rrfs == 1 && $cobb == 1 && !empty($rrfs_var2) && !empty($rrfs_cobb_time) && count($rrfs_var2) == count($rrfs_cobb_time)) {
+        $lineplot_rrfs2 = new LinePlot($rrfs_var2, $rrfs_cobb_time);
+        $lineplot_rrfs2->SetColor("deeppink");
+        $lineplot_rrfs2->SetWeight(3);
+        $lineplot_rrfs2->SetStyle("dashed");
+        $lineplot_rrfs2->SetLegend("" . $rrfs_cobb_init . "z RRFS Cobb v5.5");
+        $graph->Add($lineplot_rrfs2);
+        $lineplot_rrfs2->SetColor("deeppink");
+    }
+} else {
+    if ($rrfs == 1 && !empty($rrfs_var2) && !empty($buf_t_rrfs) && count($rrfs_var2) == count($buf_t_rrfs)) {
+        $lineplot_rrfs2 = new LinePlot($rrfs_var2, $buf_t_rrfs);
+        $lineplot_rrfs2->SetColor("deeppink");
+        $lineplot_rrfs2->SetWeight(3);
+        $lineplot_rrfs2->SetStyle("dashed");
+        if ($var1 == "wind") {
+            $lineplot_rrfs2->SetLegend("" . $buf_rrfs_init . "z RRFS Max MT");
+            if ($max_mt == 1) {
+                $graph->Add($lineplot_rrfs2);
+                $lineplot_rrfs2->SetColor("deeppink");
+            }
+        } else {
+            $lineplot_rrfs2->SetLegend("" . $buf_rrfs_init . "z RRFS");
+            $graph->Add($lineplot_rrfs2);
+            $lineplot_rrfs2->SetColor("deeppink");
+        }
+    }
+}
+
 if ($nam_mos == 1 && !empty($nam_mos_var) && !empty($nam_mos_time) && count($nam_mos_var) == count($nam_mos_time)) {
     if ($var == "wdir") {
         $lineplot_nam_mos = new ScatterPlot($nam_mos_var, $nam_mos_time);
@@ -2018,6 +2240,91 @@ if ($rap == 1 && !empty($rap_var2) && !empty($buf_t_rap) && count($rap_var2) == 
     $lineplot_rap2->SetColor("darkgreen");
 }
 
+if ($hrrr == 1 && !empty($hrrr_var) && !empty($buf_t_hrrr) && count($hrrr_var) == count($buf_t_hrrr)) {
+    if ($var == "wdir") {
+        $lineplot_hrrr = new ScatterPlot($hrrr_var, $buf_t_hrrr);
+        $lineplot_hrrr->mark->SetType(MARK_FILLEDCIRCLE);
+        $lineplot_hrrr->mark->SetWidth(3);
+        $lineplot_hrrr->mark->SetFillColor("darkgreen");
+    } else {
+        $lineplot_hrrr = new LinePlot($hrrr_var, $buf_t_hrrr);
+        $lineplot_hrrr->SetColor("darkgreen");
+        $lineplot_hrrr->SetWeight(3);
+    }
+    if ($var1 == "snow_accum") {
+        if ($ratio != 0) {
+            $lineplot_hrrr->SetLegend("" . $buf_hrrr_init . "z HRRR " . $ratio . ":1");
+            $graph->Add($lineplot_hrrr);
+            $lineplot_hrrr->SetColor("darkgreen");
+        }
+    } elseif ($var1 == "wind") {
+        if ($mean == 1) {
+            $lineplot_hrrr->SetLegend("" . $buf_hrrr_init . "z HRRR");
+            $graph->Add($lineplot_hrrr);
+            $lineplot_hrrr->SetColor("darkgreen");
+        }
+    } else {
+        $lineplot_hrrr->SetLegend("" . $buf_hrrr_init . "z HRRR");
+        $graph->Add($lineplot_hrrr);
+        $lineplot_hrrr->SetColor("darkgreen");
+    }
+}
+
+if ($hrrr == 1 && !empty($hrrr_var1) && !empty($buf_t_hrrr) && count($hrrr_var1) == count($buf_t_hrrr)) {
+    $lineplot_hrrr1 = new LinePlot($hrrr_var1, $buf_t_hrrr);
+    $lineplot_hrrr1->SetColor("darkgreen");
+    $lineplot_hrrr1->SetWeight(3);
+    $lineplot_hrrr1->SetStyle("dashed");
+    if ($var1 == "snow_accum") {
+        if ($max_t == 1) {
+            $lineplot_hrrr1->SetLegend("" . $buf_hrrr_init . "z HRRR Max-T Prof");
+            $graph->Add($lineplot_hrrr1);
+            $lineplot_hrrr1->SetColor("darkgreen");
+        }
+    } elseif ($var1 == "wind") {
+        if ($mean_mt == 1) {
+            $lineplot_hrrr1->SetLegend("" . $buf_hrrr_init . "z HRRR Mean MT");
+            $graph->Add($lineplot_hrrr1);
+            $lineplot_hrrr1->SetColor("darkgreen");
+        }
+    } else {
+        $lineplot_hrrr1->SetLegend("" . $buf_hrrr_init . "z HRRR");
+        $graph->Add($lineplot_hrrr1);
+        $lineplot_hrrr1->SetColor("darkgreen");
+    }
+}
+
+if ($var1 == "snow_accum") {
+    if ($hrrr == 1 && $cobb == 1 && !empty($hrrr_var2) && !empty($hrrr_cobb_time) && count($hrrr_var2) == count($hrrr_cobb_time)) {
+        $lineplot_hrrr2 = new LinePlot($hrrr_var2, $hrrr_cobb_time);
+        $lineplot_hrrr2->SetColor("lightgreen");
+        $lineplot_hrrr2->SetWeight(3);
+        $lineplot_hrrr2->SetStyle("dashed");
+        $lineplot_hrrr2->SetLegend("" . $hrrr_cobb_init . "z HRRR Cobb v5.5");
+        $graph->Add($lineplot_hrrr2);
+        $lineplot_hrrr2->SetColor("lightgreen");
+    }
+} else {
+    if ($hrrr == 1 && !empty($hrrr_var2) && !empty($buf_t_hrrr) && count($hrrr_var2) == count($buf_t_hrrr)) {
+        $lineplot_hrrr2 = new LinePlot($hrrr_var2, $buf_t_hrrr);
+        $lineplot_hrrr2->SetColor("lightgreen");
+        $lineplot_hrrr2->SetWeight(3);
+        $lineplot_hrrr2->SetStyle("dashed");
+        if ($var1 == "wind") {
+            $lineplot_hrrr2->SetLegend("" . $buf_hrrr_init . "z HRRR Max MT");
+            if ($max_mt == 1) {
+                $graph->Add($lineplot_hrrr2);
+                $lineplot_hrrr2->SetColor("lightgreen");
+            }
+        } else {
+            $lineplot_hrrr2->SetLegend("" . $buf_hrrr_init . "z HRRR");
+            $graph->Add($lineplot_hrrr2);
+            $lineplot_hrrr2->SetColor("lightgreen");
+        }
+    }
+}
+
+
 if ($con == 1 && !empty($consensus) && !empty($consensus_t) && count($consensus) == count($consensus_t)) {
     if ($var == "wdir") {
         $lineplot_c = new ScatterPlot($consensus, $consensus_t);
@@ -2103,12 +2410,12 @@ if ($nws == 1 && !empty($nws_var) && !empty($nws_time) && count($nws_var) == cou
         $lineplot_nws = new ScatterPlot($nws_var, $nws_time);
         $lineplot_nws->mark->SetType(MARK_FILLEDCIRCLE);
         $lineplot_nws->mark->SetWidth(3);
-        $lineplot_nws->mark->SetFillColor("darkgreen");
+        $lineplot_nws->mark->SetFillColor("gray4");
     } else {
         $lineplot_nws = new LinePlot($nws_var, $nws_time);
-        $lineplot_nws->SetColor("darkgreen");
+        $lineplot_nws->SetColor("gray4");
         $lineplot_nws->mark->SetType(MARK_SQUARE);
-        $lineplot_nws->mark->SetFillColor('darkgreen');
+        $lineplot_nws->mark->SetFillColor('gray4');
         $lineplot_nws->SetWeight(3);
     }
     if ($var1 == "wind") {
@@ -2121,15 +2428,15 @@ if ($nws == 1 && !empty($nws_var) && !empty($nws_time) && count($nws_var) == cou
         $graph->Add($lineplot_nws);
     }
     if ($var != "wdir") {
-        $lineplot_nws->SetColor("darkgreen");
+        $lineplot_nws->SetColor("gray4");
     }
 }
 
 if ($nws == 1 && !empty($nws_var1) && !empty($nws_time1) && count($nws_var1) == count($nws_time1)) {
     $lineplot_nws1 = new LinePlot($nws_var1, $nws_time1);
-    $lineplot_nws1->SetColor("darkgreen");
+    $lineplot_nws1->SetColor("gray4");
     $lineplot_nws1->mark->SetType(MARK_FILLEDCIRCLE);
-    $lineplot_nws1->mark->SetFillColor('darkgreen');
+    $lineplot_nws1->mark->SetFillColor('gray4');
     $lineplot_nws1->mark->SetWidth(3);
     $lineplot_nws1->SetWeight(3);
     if ($var1 == "wind") {
