@@ -48,7 +48,7 @@ jobs:
         sudo apt-get install apache2 apache2-dev php-fpm
         sudo a2enmod headers rewrite proxy proxy_http proxy_balancer ssl lbmethod_byrequests cgi expires authz_groupfile
         sudo a2enmod proxy_fcgi setenvif
-        sudo a2enconf php8.3-fpm
+        sudo a2enconf php8.4-fpm
 
     - name: Configure repo for web access
       run: |
@@ -58,7 +58,7 @@ jobs:
         sudo ln -s $PWD /opt/bufkit_warehouse
         sudo a2ensite bufkit_warehouse.conf
         sudo systemctl restart apache2
-        sudo systemctl restart php8.3-fpm
+        sudo systemctl restart php8.4-fpm
 
     # - name: Setup upterm session
     #    uses: lhotari/action-upterm@v1
