@@ -257,9 +257,9 @@ if ($model == "nam") {
         }
 
         if ($hr == "00" || $hr == "06" || $hr == "12" || $hr == "18") {
-            $line_start = 4154;
-            $line_end = 4375;
-            $hrs = 36;
+            $line_start = 5498; //4154;
+            $line_end = 5791; //4375;
+            $hrs = 48; //36;
         } else {
             $line_start = 2138;
             $line_end = 2251;
@@ -268,15 +268,32 @@ if ($model == "nam") {
     } else {
         $link = MTARCHIVE . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/hrrr/hrrr_" . $site . ".buf";
         if ($hr == "00" || $hr == "06" || $hr == "12" || $hr == "18") {
-            $line_start = 4154;
-            $line_end = 4375;
-            $hrs = 36;
+            if ($dCheck >= 1607083200) {
+                $line_start = 5498;
+                $line_end = 5791;
+                $hrs = 48;
+            }
+            else{
+                $line_start = 4154;
+                $line_end = 4375;
+                $hrs = 36;
+            }
         } else {
             $line_start = 2138;
             $line_end = 2251;
             $hrs = 18;
         }
     }
+}
+if ($model == "rrfs") {
+    if ($date == "") {
+        $link = "rrfs/rrfs_" . $site . ".buf";
+    } else {
+        $link = MTARCHIVE . $year . "/" . $mon . "/" . $day . "/bufkit/" . $hr . "/rrfs/rrfs_" . $site . ".buf";
+    }
+    $line_start = 12080;
+    $line_end = 12589;
+    $hrs = 84;
 }
 
 // Fix the relative links
@@ -302,7 +319,7 @@ foreach (explode("\n", $fh) as $line) {
     } elseif ($i >= $line_start && $i <= $line_end) {
         $j++;
         if ($j == 1) {
-            if ($model == "nam" || $model == "namm" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
+            if ($model == "nam" || $model == "namm" || $model == "rrfs" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
                 $stn[] = $d[0];
                 $q = str_split($d[1]);
                 $mdate[] = "20" . $q[0] . "" . $q[1] . "-" . $q[2] . "" . $q[3] . "-" . $q[4] . "" . $q[5] . " " . $q[7] . "" . $q[8] . ":00:00";
@@ -352,7 +369,7 @@ foreach (explode("\n", $fh) as $line) {
                 }
             }
         } elseif ($j == 2) {
-            if ($model == "nam" || $model == "namm" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
+            if ($model == "nam" || $model == "namm" || $model == "rrfs" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
                 $p01m[] = $d[0];
                 $c01m[] = $d[1];
                 $stc2[] = $d[2];
@@ -375,7 +392,7 @@ foreach (explode("\n", $fh) as $line) {
                 $gfs_u = $d[5];
             }
         } elseif ($j == 3) {
-            if ($model == "nam" || $model == "namm" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
+            if ($model == "nam" || $model == "namm" || $model == "rrfs" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
                 $snra[] = $d[0];
                 $uwnd[] = $d[1];
                 $vwnd[] = $d[2];
@@ -431,7 +448,7 @@ foreach (explode("\n", $fh) as $line) {
                 $wdir[] = $cam_ang;
             }
         } elseif ($j == 4) {
-            if ($model == "nam" || $model == "namm" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
+            if ($model == "nam" || $model == "namm" || $model == "rrfs" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
                 $q2ms[] = $d[0];
                 $wxts[] = $d[1];
                 $wxtp[] = $d[2];
@@ -448,7 +465,7 @@ foreach (explode("\n", $fh) as $line) {
                 $j = 0;
             }
         } elseif ($j == 5) {
-            if ($model == "nam" || $model == "namm" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
+            if ($model == "nam" || $model == "namm" || $model == "rrfs" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
                 $vstm[] = $d[0];
                 $hlcy[] = $d[1];
                 $sllh[] = $d[2];
@@ -457,7 +474,7 @@ foreach (explode("\n", $fh) as $line) {
                 $vsbk[] = $d[5] * 0.621371;
             }
         } elseif ($j == 6) {
-            if ($model == "nam" || $model == "namm" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
+            if ($model == "nam" || $model == "namm" || $model == "rrfs" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
                 $td2m[] = $d[0];
                 $dew_f = ((9 / 5) * $d[0]) + 32;
                 $dew_c = $d[0];
@@ -483,7 +500,7 @@ foreach (explode("\n", $fh) as $line) {
         $k++;
         $int = $k / 2;
         if (is_int($int)) {
-            if ($model == "nam" || $model == "namm" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
+            if ($model == "nam" || $model == "namm" || $model == "rrfs" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
                 $cfrl[$z][] = $d[0];
                 $hght[$z][] = $d[1];
                 $h_now = $d[1];
@@ -623,7 +640,7 @@ for ($i = -1; $i <= $hrs; $i++) {
         } else {
             $maxr = 0;
         }
-        if ($model == "nam" || $model == "namm" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
+        if ($model == "nam" || $model == "namm" || $model == "rrfs" || $model == "rap" || $model == "ruc" || $model == "nam4km" || $model == "sref" || $model == "hrrr") {
             if (@$wsym[$i] >= 70 && @$wsym[$i] <= 75) {
                 $buf_snow_sr = @round($p01m[$i] * $ratio * 0.0393700787, 1);
             } else {
