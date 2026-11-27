@@ -19,7 +19,7 @@ $init = null;
 
 $c = 0;
 $d = 5;
-$lines = get_realtime_lines("nam/nam_kdsm.buf");
+$lines = get_realtime_lines("rrfs/rrfs_kdsm.buf");
 foreach ($lines as $line) {
     $c++;
     if ($c == $d) {
@@ -33,11 +33,11 @@ foreach ($lines as $line) {
     }
 }
 
-$nam_i = "NAM Initialized " . $init_mon . "/" . $init_day . "/" . $init_year . " @ " . $init . "z";
+$nam_i = "RRFS Initialized " . $init_mon . "/" . $init_day . "/" . $init_year . " @ " . $init . "z";
 
 $c = 0;
 $d = 5;
-$lines = get_realtime_lines("namm/namm_kdsm.buf");
+$lines = get_realtime_lines("hrrr/hrrr_kdsm.buf");
 foreach ($lines as $line) {
     $c++;
     if ($c == $d) {
@@ -51,7 +51,7 @@ foreach ($lines as $line) {
     }
 }
 
-$namm_i = "NAM Initialized " . $init_mon . "/" . $init_day . "/" . $init_year . " @ " . $init . "z";
+$namm_i = "HRRR Initialized " . $init_mon . "/" . $init_day . "/" . $init_year . " @ " . $init . "z";
 
 $c = 0;
 $d = 5;
@@ -60,7 +60,7 @@ foreach ($lines as $line) {
     $c++;
     if ($c == $d) {
         $get_init = explode(" ", trim($line));
-        $init_h = str_split($get_init[7]);
+        $init_h = str_split($get_init[8]);
         $init_year = "" . $init_h[0] . "" . $init_h[1] . "";
         $init_mon = "" . $init_h[2] . "" . $init_h[3] . "";
         $init_day = "" . $init_h[4] . "" . $init_h[5] . "";
@@ -78,7 +78,7 @@ foreach ($lines as $line) {
     $c++;
     if ($c == $d) {
         $get_init = explode(" ", trim($line));
-        $init_h = str_split($get_init[7]);
+        $init_h = str_split($get_init[8]);
         $init_year = "" . $init_h[0] . "" . $init_h[1] . "";
         $init_mon = "" . $init_h[2] . "" . $init_h[3] . "";
         $init_day = "" . $init_h[4] . "" . $init_h[5] . "";

@@ -172,19 +172,19 @@ function updateTable(){
 	if(Object.keys(o).length > 0){
 		table2 += '<tr>';
 		for(var t in times){
-	                if(o.hasOwnProperty(times[t])){
-	                        if(!isNaN(threshold) && threshold != 'obs'){
+    	    if(o.hasOwnProperty(times[t])){
+    	        if(!isNaN(threshold) && threshold != 'obs'){
 					if(condition == 'greaterThan' && parseFloat(o[times[t]]) > threshold){
 						table2 += '<td align="center" bgcolor="' + color + '" onClick="labelPoint(' + o[times[t]] + ')">' + o[times[t]] + '</td>';
-	                                }
-	                                else if(condition == 'lessThan' && parseFloat(o[times[t]]) < threshold){
-	                                        table2 += '<td align="center" bgcolor="' + color + '" onClick="labelPoint(' + o[times[t]] + ')">' + o[times[t]] + '</td>';
-	                                }
-	                                else if(condition == 'equalTo' && parseFloat(o[times[t]]) == threshold){
-	                                        table2 += '<td align="center" bgcolor="' + color + '" onClick="labelPoint(' + o[times[t]] + ')">' + o[times[t]] + '</td>';
-	                                }
-	                                else{
-	                                        table2 += '<td align="center" onClick="labelPoint(' + o[times[t]] + ')">' + o[times[t]] + '</td>';
+	                }
+	                else if(condition == 'lessThan' && parseFloat(o[times[t]]) < threshold){
+	                    table2 += '<td align="center" bgcolor="' + color + '" onClick="labelPoint(' + o[times[t]] + ')">' + o[times[t]] + '</td>';
+	                }
+	                else if(condition == 'equalTo' && parseFloat(o[times[t]]) == threshold){
+	                    table2 += '<td align="center" bgcolor="' + color + '" onClick="labelPoint(' + o[times[t]] + ')">' + o[times[t]] + '</td>';
+	                }
+	                else{
+	                    table2 += '<td align="center" onClick="labelPoint(' + o[times[t]] + ')">' + o[times[t]] + '</td>';
 					}
 				}
 				else{
@@ -290,13 +290,13 @@ function updateTable(){
 }
 
 function getAllData(v,s){
-        var allTimes = [];
-        var allKeys = [];
-        var d = {};
+    var allTimes = [];
+    var allKeys = [];
+    var d = {};
 	var c = {};
-	var models = ['hrrr','rap','nam','namm','nam4km','gfs','gfsm'];
-        var models2 = ['hrrr','rap','nam','nam','nam-3km','gfs','gfs'];
-	for(var j=0;j<6;j++){
+	var models = ['hrrr','rap','rrfs','gfs','gfsm'];
+    var models2 = ['hrrr','rap','rrfs','gfs','gfs'];
+	for(var j=0;j<4;j++){
 		var m = models[j];
 		var url = "../data/parser.php?model=" + m + "&site=" + s;
                 var dataRequest = new XMLHttpRequest();
@@ -499,7 +499,7 @@ function getSingleData(m,v,s){
 	var d = {};
 	var c = {};
 	var iter = 22;
-	if(m == 'nam'){
+	if(m == 'rrfs'){
 		var iter = 15;
 	}
 	else if(m == 'nam4km'){
@@ -581,7 +581,7 @@ function getSingleData(m,v,s){
 				d[init] = {};
 				c[init] = {};
 				allKeys.push(init);
-				if(m != 'rap' && m != 'hrrr' && m != 'nam4km' && j == 1){
+				if(m != 'rap' && m != 'hrrr' && m != 'rrfs' && j == 1){
 					var now1 = new Date(initVal);
 					var now2 = new Date(init);
 					if(now1 > now2){
@@ -826,9 +826,7 @@ function showModels(){
 		innerHTML += '<select id="model" onChange="showModelVars(); checkFire();">';
 		innerHTML += '<option value="hrrr">HRRR</option>';
 		innerHTML += '<option value="rap">RAP</option>';
-		innerHTML += '<option value="nam4km">NAM 3km</option>';
-		innerHTML += '<option value="nam">NAM</option>';
-		innerHTML += '<option value="sref">SREF</option>';
+		innerHTML += '<option value="rrfs">RRFS</option>';
 		innerHTML += '<option value="gfs">GFS</option>';
 		innerHTML += '</select>';
 	}
